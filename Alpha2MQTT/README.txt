@@ -97,7 +97,7 @@ Total PV Energy Generated (kWh)
 Total PV Energy Consumed (kWh)
 
 
-You can customise the schedules by modifying Alpha2MQTT.ino.  Search for 'Schedules' and add or removing registers as you see fit from each schedule.  The list of supported registers begins on line 63 in Definitions.h.  A register name which contains _R_ is read only, one which contains _RW_ is read/write, and one which contains _W_ is write only.
+You can customise the schedules by modifying Alpha2MQTT.ino.  Search for 'Schedules' and add or removing registers as you see fit from each schedule.  The list of supported registers begins on line 85 in Definitions.h.  A register name which contains _R_ is read only, one which contains _RW_ is read/write, and one which contains _W_ is write only.
 
 An example response for any subscribed state is a JSON of name/value pairs which are separated by commas, for example:
 {
@@ -132,10 +132,11 @@ An example response for the above request could be:
     "functionCode": 3,
     "registerName": "REG_GRID_METER_R_TOTAL_ENERGY_FEED_TO_GRID_1",
     "dataType": "unsignedInt",
-    "dataValue": 122264,
-    "formattedDataValue": 1222.64,
+    "dataValue": 123515,
+    "formattedDataValue": 12351.50,
     "rawDataSize": 4,
-    "rawData": [0,1,221,152]
+    "rawData": [0,1,226,123],
+    "end": "true"
 }
 
 * If the register returns a character dataType then dataValue and formattedDataValue will be in double quotes.
@@ -175,7 +176,8 @@ An example response for the above request could be:
     "registerAddress": "0x0743",
     "functionCode": 3,
     "rawDataSize": 16,
-    "rawData": [65,76,55,48,48,49,48,50,49,48,54,48,51,50,49,0]
+    "rawData": [65,76,55,48,48,49,48,50,49,48,54,48,51,50,49,0],
+    "end": "true"
 }
 
 
@@ -247,11 +249,12 @@ Alpha2MQTT/response/write/register/raw/data
 
 An example response for the above request could be:
 {
-    "responseStatus": "writeDataRegisterSuccess"
-    "registerAddress": "0x0881"
-    "functionCode": 16
-    "rawDataSize": 4
-    "rawData": [8,129,0,2]
+    "responseStatus": "writeDataRegisterSuccess",
+    "registerAddress": "0x0881",
+    "functionCode": 16,
+    "rawDataSize": 4,
+    "rawData": [8,129,0,2],
+    "end": "true"
 }
 In raw data, the Alpha documentation suggests byte one is the high byte of the register address, byte two is the low byte of the register address, byte three is the high byte of the number of registers and byte four is the low byte of the number of registers.  As this was a four byte register, in reality this is a double register, hence 2 in the last byte.
 
@@ -299,6 +302,7 @@ If the request and response was successful, but the inverter failed to carry out
     "responseStatus": "slaveError",
     "functionCode": 16,
     "slaveErrorCode": 321
+    "end": "true"
 }
 where
 slaveErrorCode is an unknown number.  Note that slave errors are not covered in the AlphaESS documentation, and not having received a slave error response I cannot give guidance as to what would cause errors, or what potential slaveErrorCodes could be.
@@ -365,7 +369,8 @@ rawData example
     "dataValue": 32000,
     "formattedDataValue": 32000,
     "rawDataSize": 4,
-    "rawData": [0,0,125,0]
+    "rawData": [0,0,125,0],
+    "end": "true"
 }
 0        0        125      0
 00000000 00000000 01111101 00000000 = 32000 base 10 decimal.

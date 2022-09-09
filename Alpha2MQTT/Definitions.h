@@ -29,13 +29,13 @@ Customise these options as per README.txt.  Please read README.txt before contin
 
 
 // Update with your Wifi details
-#define WIFI_SSID	""
+#define WIFI_SSID	"Stardust"
 #define WIFI_PASSWORD	""
 
 // Update with your MQTT Broker details
 #define MQTT_SERVER	"192.168.1.40"
 #define MQTT_PORT	1883
-#define MQTT_USERNAME	""			// Empty string for none.
+#define MQTT_USERNAME	"Alpha"			// Empty string for none.
 #define MQTT_PASSWORD	""
 
 // The device name is used as the MQTT base topic and presence on the network.
@@ -943,7 +943,7 @@ struct mqttState
 
 
 
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_LEVEL2 // For serial flooding action
 
 #endif
