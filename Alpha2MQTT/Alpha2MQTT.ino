@@ -24,7 +24,7 @@ First, go and customise options at the top of Definitions.h!
 #include <Adafruit_SSD1306.h>
 
 // Device parameters
-char _version[6] = "v1.0";
+char _version[6] = "v1.1";
 
 // WiFi parameters
 WiFiClient _wifi;
@@ -916,8 +916,8 @@ void mqttReconnect()
 			// Subscribe or resubscribe to topics.
 			if (subscribed)
 			{
-				// Connected, so ditch out with blank screen
-				updateOLED(false, "", "", "");
+				// Connected, so ditch out with runstate on the screen
+				updateRunstate();
 				break;
 			}
 			
@@ -1016,42 +1016,46 @@ void sendData()
 	static unsigned long lastRunFiveMinutes = 0;
 	static unsigned long lastRunOneHour = 0;
 	static unsigned long lastRunOneDay = 0;
-
+	int numberOfRegisters;
 	// Update all parameters and send to MQTT.
 	if (checkTimer(&lastRunTenSeconds, STATUS_INTERVAL_TEN_SECONDS))
 	{
-		sendDataFromAppropriateArray(_mqttTenSecondStatusRegisters, DEVICE_NAME MQTT_MES_STATE_SECOND_TEN);
+		numberOfRegisters = sizeof(_mqttTenSecondStatusRegisters) / sizeof(struct mqttState);
+		sendDataFromAppropriateArray(_mqttTenSecondStatusRegisters, numberOfRegisters, DEVICE_NAME MQTT_MES_STATE_SECOND_TEN);
 	}
 
 	// Update all parameters and send to MQTT.
 	if (checkTimer(&lastRunOneMinute, STATUS_INTERVAL_ONE_MINUTE))
 	{
-		sendDataFromAppropriateArray(_mqttOneMinuteStatusRegisters, DEVICE_NAME MQTT_MES_STATE_MINUTE_ONE);
+		numberOfRegisters = sizeof(_mqttOneMinuteStatusRegisters) / sizeof(struct mqttState);
+		sendDataFromAppropriateArray(_mqttOneMinuteStatusRegisters, numberOfRegisters, DEVICE_NAME MQTT_MES_STATE_MINUTE_ONE);
 	}
 
 	// Update all parameters and send to MQTT.
 	if (checkTimer(&lastRunFiveMinutes, STATUS_INTERVAL_FIVE_MINUTE))
 	{
-		sendDataFromAppropriateArray(_mqttFiveMinuteStatusRegisters, DEVICE_NAME MQTT_MES_STATE_MINUTE_FIVE);
+		numberOfRegisters = sizeof(_mqttFiveMinuteStatusRegisters) / sizeof(struct mqttState);
+		sendDataFromAppropriateArray(_mqttFiveMinuteStatusRegisters, numberOfRegisters, DEVICE_NAME MQTT_MES_STATE_MINUTE_FIVE);
 	}
 
 	// Update all parameters and send to MQTT.
 	if (checkTimer(&lastRunOneHour, STATUS_INTERVAL_ONE_HOUR))
 	{
-		sendDataFromAppropriateArray(_mqttOneHourStatusRegisters, DEVICE_NAME MQTT_MES_STATE_HOUR_ONE);
+		numberOfRegisters = sizeof(_mqttOneHourStatusRegisters) / sizeof(struct mqttState);
+		sendDataFromAppropriateArray(_mqttOneHourStatusRegisters, numberOfRegisters, DEVICE_NAME MQTT_MES_STATE_HOUR_ONE);
 	}
 
 	// Update all parameters and send to MQTT.
 	if (checkTimer(&lastRunOneDay, STATUS_INTERVAL_ONE_DAY))
 	{
-		sendDataFromAppropriateArray(_mqttOneDayStatusRegisters, DEVICE_NAME MQTT_MES_STATE_DAY_ONE);
+		numberOfRegisters = sizeof(_mqttOneDayStatusRegisters) / sizeof(struct mqttState);
+		sendDataFromAppropriateArray(_mqttOneDayStatusRegisters, numberOfRegisters, DEVICE_NAME MQTT_MES_STATE_DAY_ONE);
 	}
 }
 
-void sendDataFromAppropriateArray(mqttState* registerArray, char* topic)
+void sendDataFromAppropriateArray(mqttState* registerArray, int numberOfRegisters, char* topic)
 {
 	int	l = 0;
-	int numberOfRegisters = 0;
 
 	// For getting back out of flash - Storing these arrays in PROGMEM so they don't use valuable RAM.
 	mqttState singleRegister;
@@ -1062,15 +1066,13 @@ void sendDataFromAppropriateArray(mqttState* registerArray, char* topic)
 
 	emptyPayload();
 
-	numberOfRegisters = sizeof(_mqttTenSecondStatusRegisters) / sizeof(struct mqttState);
-
 	resultAddedToPayload = addToPayload("{\r\n");
 	if (resultAddedToPayload == modbusRequestAndResponseStatusValues::addedToPayload)
 	{
 		for (l = 0; l < numberOfRegisters; l++)
 		{
-			memcpy_P(&singleRegister.registerAddress, &_mqttTenSecondStatusRegisters[l].registerAddress, 2);
-			strcpy_P(singleRegister.mqttName, _mqttTenSecondStatusRegisters[l].mqttName);
+			memcpy_P(&singleRegister.registerAddress, &registerArray[l].registerAddress, 2);
+			strcpy_P(singleRegister.mqttName, registerArray[l].mqttName);
 
 
 			result = addStateInfo(singleRegister.registerAddress, singleRegister.mqttName, l < (numberOfRegisters - 1), resultAddedToPayload);
