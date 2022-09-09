@@ -16,23 +16,28 @@ Communication with Alpha2MQTT is via MQTT and can be driven by home integration 
 It's designed to run on an ESP8266 microcontroller with a TTL to RS485 module such as the MAX3485.
 
 Alpha2MQTT honours 1.23 AlphaESS Modbus documentation:
+
 [AlphaESS Modbus Documentation](https://www.alpha-ess.de/images/downloads/handbuecher/AlphaESS-Handbuch_SMILET30_ModBus_RTU_V123-DE.pdf)
+
 It is only available in German however Google offers PDF translation which I have used to good effect for English.
 
 
 ## States
 To receive information from any of the repeating schedules, subscribe your MQTT client to:
-
+```
 Alpha2MQTT/state/second/ten
 Alpha2MQTT/state/minute/one
 Alpha2MQTT/state/minute/five
 Alpha2MQTT/state/hour/one
 Alpha2MQTT/state/day/one
+```
 
 Each of the schedules can be customised to report a number* / any combination of register values.  Alpha2MQTT has been developed this way to give flexibility.  For example, there is probably no need to report grid voltage every ten seconds, instead once every five and in doing so we are limiting network traffic over MQTT and onward processing in software such as Home Assistant.
 
-By default
-Every ten seconds:
+
+### By default
+
+#### Every ten seconds:
 Battery State Of Charge (%)
 Battery Power (+/-) (W)
 Battery Voltage (V)
@@ -44,24 +49,24 @@ Inverter Power (+/-) (W)
 Inverter Current (Phase A) (A)
 Inverter Temp (DegC)
 
-Every minute:
+#### Every minute:
 Grid Voltage (Phase A) (V)
 PV Voltage (Phase A) (V)
 
-Every five minutes:
+#### Every five minutes:
 Dispatch Start (description as per documentation)
 Dispatch Mode (description as per documentation)
 Dispatch Power (W) (32000 Offset, < 32000 charge, > 32000 discharge)
 Dispatch SOC (%)
 Dispatch Time (S)
 
-Every one hour:
+#### Every one hour:
 Grid Frequency (Hz)
 PV Frequency (Hz)
 System Fault (description as per documentation)
 Battery Fault (description as per documentation)
 
-Every one day:
+#### Every one day:
 Total Energy Fed To Grid (kWh)
 Total Energy Consumed From Grid (kWh)
 Total PV Energy Generated (kWh)
