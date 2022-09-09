@@ -516,6 +516,8 @@ Y is the number of bytes ended up being requested.
 
 
 
+I will endeavour to help you if you are struggling.  Try email or [Facebook](https://www.facebook.com/mydan100/).
+
 (c) Daniel Young 2022 [daniel@mydan.com](daniel@mydan.com)
 
 
@@ -587,6 +589,8 @@ Here's how it looks when completed.
 
 ![Finished](Pics/Hello.jpg)
 ![Finished](Pics/Underside.jpg)
+
+If you are not comfortable soldering, appreciating the rather insignificant cost of the parts involved, for a small fee I will happily build and post you a working unit, and it will be a lot nicer looking than my tesbed unit!
 
 # Flashing
 ## Configuration
