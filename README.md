@@ -2,18 +2,25 @@
 ## A smart home interface for AlphaESS solar and battery inverters.
 
 ### Supported devices are:
-SMILE5, SMILE-B3, SMILE-T10, Storion T30.
+SMILE5,
+
+SMILE-B3,
+
+SMILE-T10,
+
+Storion T30.
+
 *Newer models such as the SMILE B3 Plus and others are likely to work too.
 
 ![Alpha2MQTT](Pics/Normal.jpg)
 
 Alpha2MQTT (A2M) is a remote control interface for AlphaESS inverters which support Modbus via RS485.
 
-It allows full remote control of the inverter and can report various information based on repeating schedules of every 10 seconds, every 1 minute, every 5 minutes, every hour and every day.
+It allows full remote control of the inverter (i.e. forcibly charge the battery from the grid on demand / forcibly discharge the battery to the grid on demand / return to normal mode on demand / setting date / time / PV capacity as displayed on the Alpha Cloud / and a lot (A LOT) more) and can report various information based on repeating schedules of every 10 seconds, every 1 minute, every 5 minutes, every hour and every day.
 
 Communication with Alpha2MQTT is via MQTT and can be driven by home integration solutions such as [Home Assistant](https://www.home-assistant.io/), [Node-Red](https://nodered.org/) and anything else which is MQTT compatible.
 
-It's designed to run on an ESP8266 microcontroller with a TTL to RS485 module such as the MAX3485.
+It's designed to run on an ESP8266 microcontroller (it was developed on a Wemos D1 mini) with a TTL to RS485 module such as the MAX3485.
 
 Alpha2MQTT honours 1.23 AlphaESS Modbus documentation:
 
@@ -133,11 +140,11 @@ An example response for the above request could be:
 
 * If the register returns a character dataType then dataValue and formattedDataValue will be in double quotes.
 
-** If the register is a lookup, i.e. 0x1000 (REG_SAFETY_TEST_RW_GRID_REGULATION) Grid_Regulation, formattedDataValue will bring back the appropriate textual lookup, i.e dataValue of 8, formattedDataValue of "CEB" whilst retaining the actual value in dataValue.
+* If the register is a lookup, i.e. 0x1000 (REG_SAFETY_TEST_RW_GRID_REGULATION) Grid_Regulation, formattedDataValue will bring back the appropriate textual lookup, i.e dataValue of 8, formattedDataValue of "CEB" whilst retaining the actual value in dataValue.
 
-*** 0x0743 (REG_SYSTEM_INFO_R_EMS_SN_BYTE_1_2) EMS SN byte1-2 is the only register which undergoes custom processing in Alpha2MQTT different to spec.  It returns the full 15 character ALxxxxxxxxxxxxxxx serial number in characterValue in one go, and the remaining EMS SN byte-x-y registers are not implemented as they are essentially pointless.
+* 0x0743 (REG_SYSTEM_INFO_R_EMS_SN_BYTE_1_2) EMS SN byte1-2 is the only register which undergoes custom processing in Alpha2MQTT different to spec.  It returns the full 15 character ALxxxxxxxxxxxxxxx serial number in characterValue in one go, and the remaining EMS SN byte-x-y registers are not implemented as they are essentially pointless.
 
-**** There is a custom handled register address of 0xFFFF (REG_CUSTOM_SYSTEM_DATE_TIME) which returns the full system date/time in UK dd/MMM/yyyy HH:mm:ss format in formattedDataValue.
+* There is a custom handled register address of 0xFFFF (REG_CUSTOM_SYSTEM_DATE_TIME) which returns the full system date/time in UK dd/MMM/yyyy HH:mm:ss format in formattedDataValue.
 
 ### Raw Read
 Alpha2MQTT supports over 200 registers via the handled route, however it does not cater for registers in the Safety TEST, ATE TEST, CT calibration and Battery - INDUSTRY series categories (with the exception of 0x1000 Grid_Regulation.)  This is because there are many more hundreds of registers in these categories, they are rather niche and on my inverter (SMILE B3) most I cannot query and test them.  As such, by providing a raw read functionality Alpha2MQTT can expose any of these registers to advanced users and it will return the raw data bytes for onward processing as you see fit.
@@ -155,7 +162,7 @@ With the following JSON
 ```
 where
 
-registerAddress is the hex address of the register as per the documentation, and where the register is a register in the Alpha documentation.
+registerAddress is the hex address of the register as per the documentation.
 
 dataBytes is the number of bytes to request, as per the Data format column in the Alpha documentation.  Usually follow the documentation, however for registers such as serial numbers / date times you can actually pass more and the Alpha system will duly return more.  For example, the documentation for EMS SN byte1-2 (0x0743) is two bytes
 however you can request 16.
@@ -227,7 +234,7 @@ In reality, you will probably only ever get the following back:
     "registerAddress": "0x084F"
 }
 ```
-In raw data, the Alpha documentation suggests byte one is the high byte of the register address, byte two is the low byte of the register address, byte three is the high byte of the value and byte four is the low byte of the value.
+In raw data, the Alpha documentation says byte one is the high byte of the register address, byte two is the low byte of the register address, byte three is the high byte of the value and byte four is the low byte of the value.
 Again, for me, this function does nothing and I only provide the above as guidance as to how it should work.  Instead, I recommend just using Write Raw Data Register as documented below.
 
 
@@ -254,7 +261,7 @@ value is the base 10 integer you wish to write to the register.  For example, th
 
 * If the register has documentation which suggests values are in hex, keep in mind they need to be written in a single base 10 value (standard numbers you count with) regardless of whether you are writing to a single two-byte register or a double four-byte register.  And all hex values are read out in base 10 bytes, each between 0 and 255.  What does this mean exactly?  Take register 0x080F, the Modbus address.  The documentation refers to the value being 0x55 in hex.  This is true, however this will be read out in rawData as 0, 85.  If you wanted to change the Modbus address to 0x56, you would use a value of 86.  This would be read out in rawData as 0, 86.
 
-** There is a hex starter for ten at the bottom of this document.
+* There is a hex starter for ten contained in the README.txt file.
 
 
 Alpha2MQTT will do the rest and will return the response via the following topic which you can subscribe to:
@@ -273,7 +280,7 @@ An example response for the above request could be:
     "end": "true"
 }
 ```
-In raw data, the Alpha documentation suggests byte one is the high byte of the register address, byte two is the low byte of the register address, byte three is the high byte of the number of registers and byte four is the low byte of the number of registers.  As this was a four byte register, in reality this is a double register, hence 2 in the last byte.
+In raw data, the Alpha documentation says byte one is the high byte of the register address, byte two is the low byte of the register address, byte three is the high byte of the number of registers and byte four is the low byte of the number of registers.  As this was a four byte register, in reality this is a double register, hence 2 in the last byte.
 
 You can technically be smart and write two registers at once if they are next to each other, but things are complex enough as they are so I advise you don't.
 
@@ -331,6 +338,7 @@ If the request and response was successful, but the inverter failed to carry out
 }
 ```
 where
+
 slaveErrorCode is an unknown number.  Note that slave errors are not covered in the AlphaESS documentation, and not having received a slave error response I cannot give guidance as to what would cause errors, or what potential slaveErrorCodes could be.
 
 
@@ -508,7 +516,7 @@ Y is the number of bytes ended up being requested.
 
 
 
-(c) Daniel Young 2022 [daniel@mydan.com](mailto:daniel@mydan.com)
+(c) Daniel Young 2022 [daniel@mydan.com](daniel@mydan.com)
 
 
 Thanks to Colin McGerty's (colin@mcgerty.co.uk) work on Sofar2MQTT which brought about my intrigue and on which some of Alpha2MQTT's program logic and circuitry is based.
@@ -534,18 +542,27 @@ calcCRC by angelo.compagnucci@gmail.com and jpmzometa@gmail.com
 *The MAX3485 (which is blue, not red like the MAX3485 shown here) is preferred as it is much more stable because it uses 3.3v logic, just like the ESP8366. The MAX485 uses 5v logic but is somewhat tolerant of 3.3v and is generally cheaper and more widely available.  I use a MAX3485 and I recommend you do too.  MAX3485 boards do not have DR and RE flow control pins, so there are two circuit diagrams below to show wiring of each.
 
 ![D1 Mini](Pics/D1mini.png)
+
 I bought [this D1 mini](https://www.ebay.co.uk/itm/363891216533)
 
+
 ![OLED Shield](Pics/OLEDShield.png)
+
 I bought [this OLED shield](https://www.ebay.co.uk/itm/313603433730?var=612417201805)
 
+
 ![Prototyping Board](Pics/PrototypingBoard.png)
+
 I bought [this prototyping board](https://www.ebay.co.uk/itm/265235487263)
 
+
 ![MAX3485](Pics/MAX3485.png)
+
 I bought [this MAX3845](https://www.ebay.co.uk/itm/403668533766)
 
+
 ![Wire](Pics/Wire.png)
+
 For wire I suggest you strip a standard network cable and use wires from that.  You will probably have plenty of 1m cables spare which came with your broadband router, there are plenty of colours to choose from and it is a thin robust wire which will bend easily - and you can source them from the offcuts of the RS485 cable you'll be making - more on that later.
 
 ## Steps
@@ -553,6 +570,7 @@ For wire I suggest you strip a standard network cable and use wires from that.  
 ### Wire the components according to the appropriate MAX3485 / MAX485 circuit diagram.
 
 ![Wiring Diagram MAX3485](Pics/MAX3485 Circuit.PNG)
+
 ![Wiring Diagram MAX485](Pics/MAX485 Circuit.PNG)
 
 D6 is the receiving pin on the D1 mini.  It connects to the transmitting TXD pin on the 3845 or RO on the 845.
@@ -615,7 +633,7 @@ You now need a suitable wire to connect to your AlphaESS system.  Luckily, all d
 
 In the Modbus documentation it indicates that the CAN/RS485 port uses a twisted pair (will always be a pair for insulation) of A+/B- pins, and the Installation manual indicates pins 3 and 6 for RS485, with no indication of which is + and which is negative.  I took wires 3 and 6 as per standard RJ45 below (Green White / Green), plugged them in... and got nothing.  I reversed them around (not knowing which is + or -) and got... nothing.
 
-[!RJ45](Pics/RJ45Pinout.PNG)
+![RJ45](Pics/RJ45Pinout.PNG)
 
 At first there were lots of questions.
 
@@ -630,11 +648,9 @@ I cannot guarantee this is the same for every model, but it *probably* is.
 
 So what I ended up with was a hybrid cable looking like so:
 
-[!Cable](Pics/B3cable.jpg)
+![Cable](Pics/B3cable.jpg)
 
 Connect the Alpha2MQTT unit to the 5v micro USB power supply you just found.  Connect the RJ45 to the CAN/RS485 port on your inverter and connect Blue White to A+ and Blue to B-.  (If your inverter used a different set of colours, please let me know so I can update the documentation.)
-
-![AlphaConnections](Pics/B3Circuitry.jpg)
 
 
 # Troubleshooting
