@@ -41,12 +41,11 @@ int _maxPayloadSize;
 //char _mqttPayload[MAX_MQTT_PAYLOAD_SIZE] = "";
 char* _mqttPayload;
 
-// OLED variables to allow putting back as was
-char _oledLine2[OLED_CHARACTER_WIDTH];
-char _oledLine3[OLED_CHARACTER_WIDTH];
-char _oledLine4[OLED_CHARACTER_WIDTH];
+// OLED variables
 char _oledOperatingIndicator = '*';
-
+char _oledLine2[OLED_CHARACTER_WIDTH] = "";
+char _oledLine3[OLED_CHARACTER_WIDTH] = "";
+char _oledLine4[OLED_CHARACTER_WIDTH] = "";
 
 
 // RS485 and AlphaESS functionality are packed up into classes
@@ -400,7 +399,7 @@ void setup()
 	_display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize OLED with the I2C addr 0x3C (for the 64x48)
 	_display.clearDisplay();
 	_display.display();
-	updateOLED("", "", _version);
+	updateOLED(false, "", "", _version);
 
 	// Configure WIFI
 	setupWifi();
@@ -455,7 +454,7 @@ void setup()
 	// Connect to MQTT
 	mqttReconnect();
 
-	updateOLED("", "", _version);
+	updateOLED(false, "", "", _version);
 }
 
 
@@ -469,7 +468,7 @@ The loop function runs overand over again until power down or reset
 void loop()
 {
 	// Refresh LED Screen, will cause the status asterisk to flicker
-	updateOLED("NULL", "NULL", "NULL");
+	updateOLED(true, "", "", "");
 
 	// Make sure WiFi is good
 	if (WiFi.status() != WL_CONNECTED)
@@ -521,7 +520,7 @@ void setupWifi()
 	while (WiFi.status() != WL_CONNECTED)
 	{
 		delay(250);
-		updateOLED("Connecting", "WiFi...", _version);
+		updateOLED(false, "Connecting", "WiFi...", _version);
 	}
 
 	// Set the hostname for this Arduino
@@ -534,7 +533,7 @@ void setupWifi()
 #endif
 
 	// Connected, so ditch out with blank screen
-	updateOLED("", "", _version);
+	updateOLED(false, "", "", _version);
 }
 
 
@@ -569,7 +568,7 @@ updateOLED
 Update the OLED. Use "NULL" for no change to a line or "" for an empty line.
 Three parameters representing each of the three lines available for status indication - Top line functionality fixed
 */
-void updateOLED(const char* line2, const char* line3, const char* line4)
+void updateOLED(bool justStatus, const char* line2, const char* line3, const char* line4)
 {
 	static unsigned long updateStatusBar = 0;
 
@@ -629,12 +628,14 @@ void updateOLED(const char* line2, const char* line3, const char* line4)
 	_display.println(line1Contents);
 
 
+
+
 	// Next line
+
 	_display.setCursor(0, 12);
-	if (strcmp(line2Contents, "NULL") != 0)
+	if (!justStatus)
 	{
 		_display.println(line2Contents);
-		// Store in modular level variable to put back if no change during a later update
 		strcpy(_oledLine2, line2Contents);
 	}
 	else
@@ -643,33 +644,28 @@ void updateOLED(const char* line2, const char* line3, const char* line4)
 	}
 
 
+
 	_display.setCursor(0, 24);
-	if (strcmp(line3Contents, "NULL") != 0)
+	if (!justStatus)
 	{
 		_display.println(line3Contents);
-		// Store in modular level variable to put back if no change during a later update
 		strcpy(_oledLine3, line3Contents);
-
 	}
 	else
 	{
 		_display.println(_oledLine3);
 	}
 
-
 	_display.setCursor(0, 36);
-	if (strcmp(line4Contents, "NULL") != 0)
+	if (!justStatus)
 	{
 		_display.println(line4Contents);
-		// Store in modular level variable to put back if no change during a later update
 		strcpy(_oledLine4, line4Contents);
-
 	}
 	else
 	{
 		_display.println(_oledLine4);
 	}
-
 	// Refresh the display
 	_display.display();
 }
@@ -705,7 +701,7 @@ void heartbeat()
 			sprintf(_debugOutput, "Bad heartbeat: %s", response.statusMqttMessage);
 			Serial.println(_debugOutput);
 #endif
-			updateOLED("", "", "BAD-CRC-HB");
+			updateOLED(false, "", "", "BAD-CRC-HB");
 		}
 
 		//Flash the LED
@@ -748,7 +744,7 @@ modbusRequestAndResponseStatusValues getSerialNumber()
 		oledLine3[10] = 0;
 		strncpy(oledLine4, &response.dataValueFormatted[10], 5);
 		oledLine4[5] = 0;
-		updateOLED("Hello", oledLine3, oledLine4);
+		updateOLED(false, "Hello", oledLine3, oledLine4);
 #ifdef DEBUG
 		sprintf(_debugOutput, "Alpha Serial Number: %s", response.dataValueFormatted);
 		Serial.println(_debugOutput);
@@ -758,7 +754,7 @@ modbusRequestAndResponseStatusValues getSerialNumber()
 	}
 	else
 	{
-		updateOLED("Alpha sys", "not known", "");
+		updateOLED(false, "Alpha sys", "not known", "");
 	}
 
 	delay(4000);
@@ -856,14 +852,14 @@ void updateRunstate()
 
 		if (request == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
 		{
-			updateOLED(runningMode, batteryPower, batterySOC);
+			updateOLED(false, runningMode, batteryPower, batterySOC);
 		}
 		else
 		{
 #ifdef DEBUG
 			Serial.println(response.statusMqttMessage);
 #endif
-			updateOLED("", "", "BAD-CRC-UR");
+			updateOLED(false, "", "", "BAD-CRC-UR");
 		}
 	}
 }
@@ -892,7 +888,7 @@ void mqttReconnect()
 		Serial.print("Attempting MQTT connection...");
 #endif
 
-		updateOLED("Connecting", "MQTT...", _version);
+		updateOLED(false, "Connecting", "MQTT...", _version);
 		delay(100);
 
 		// Attempt to connect
@@ -921,7 +917,7 @@ void mqttReconnect()
 			if (subscribed)
 			{
 				// Connected, so ditch out with blank screen
-				updateOLED("", "", "");
+				updateOLED(false, "", "", "");
 				break;
 			}
 			
