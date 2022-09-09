@@ -569,9 +569,9 @@ For wire I suggest you strip a standard network cable and use wires from that.  
 ### Cut the project board to a convenient size if you like.  I kept mine at 5cm x 7cm
 ### Wire the components according to the appropriate MAX3485 / MAX485 circuit diagram.
 
-![Wiring Diagram MAX3485](Pics/MAX3485 Circuit.PNG)
+![WiringDiagramMAX3485](Pics/MAX3485Circuit.PNG)
 
-![Wiring Diagram MAX485](Pics/MAX485 Circuit.PNG)
+![WiringDiagramMAX485](Pics/MAX485Circuit.PNG)
 
 D6 is the receiving pin on the D1 mini.  It connects to the transmitting TXD pin on the 3845 or RO on the 845.
 
