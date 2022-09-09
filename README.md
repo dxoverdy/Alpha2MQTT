@@ -38,6 +38,7 @@ Each of the schedules can be customised to report a number* / any combination of
 ### By default
 
 #### Every ten seconds:
+```
 Battery State Of Charge (%)
 Battery Power (+/-) (W)
 Battery Voltage (V)
@@ -48,57 +49,74 @@ PV Power (+/-) (W)
 Inverter Power (+/-) (W)
 Inverter Current (Phase A) (A)
 Inverter Temp (DegC)
+```
 
 #### Every minute:
+```
 Grid Voltage (Phase A) (V)
 PV Voltage (Phase A) (V)
+```
 
 #### Every five minutes:
+```
 Dispatch Start (description as per documentation)
 Dispatch Mode (description as per documentation)
 Dispatch Power (W) (32000 Offset, < 32000 charge, > 32000 discharge)
 Dispatch SOC (%)
 Dispatch Time (S)
+```
 
 #### Every one hour:
+```
 Grid Frequency (Hz)
 PV Frequency (Hz)
 System Fault (description as per documentation)
 Battery Fault (description as per documentation)
+```
 
 #### Every one day:
+```
 Total Energy Fed To Grid (kWh)
 Total Energy Consumed From Grid (kWh)
 Total PV Energy Generated (kWh)
 Total PV Energy Consumed (kWh)
-
+```
 
 You can customise the schedules by modifying Alpha2MQTT.ino.  Search for 'Schedules' and add or removing registers as you see fit from each schedule.  The list of supported registers begins on line 85 in Definitions.h.  A register name which contains _R_ is read only, one which contains _RW_ is read/write, and one which contains _W_ is write only.
 
 An example response for any subscribed state is a JSON of name/value pairs which are separated by commas, for example:
+```
 {
     "REG_BATTERY_HOME_R_BATTERY_POWER": 2845,
     "REG_INVERTER_HOME_R_VOLTAGE_L1": 238.4
 }
-
+```
 
 ## Advanced Read Registers
 Appreciating that some people may want to take inverter values in raw form with extra information, Alpha2MQTT supports request and responses for individual registers.  It does this by offering two ways, handled and raw.  A handled register and raw register is essentially the same request to the inverter, however when requesting via the handled route, checks, calculations and balances are done in Alpha2MQTT and the response includes both raw and formatted (as per Modbus documentation) data and information.  For example, where the Modbus documentation indicated a number should undergo manipulation to return something of value, i.e. frequency which needs to be multiplied by 0.01 to return Hz, then a handled read request will return the raw data, as well as the formatted data which underwent calculations.  A handled request for the EMS serial number (ALxxxxxxxxxxxxxxx) will return just that, rather than a series of numbers which need manipulation by you.
 
 ### Handled Read
 Publish MQTT messages to:
+```
 Alpha2MQTT/request/read/register/handled
+```
+
 With the following JSON
+```
 {
     "registerAddress": "0x0010"
 }
+```
 where
 registerAddress is the hex address of the register as per the documentation, and where the register is a handled register in Definitions.h
 
 Alpha2MQTT will do the rest and will return the response via the following topic which you can subscribe to:
+```
 Alpha2MQTT/response/read/register/handled
+```
 
 An example response for the above request could be:
+```
 {
     "responseStatus": "readDataRegisterSuccess",
     "registerAddress": "0x0010",
@@ -111,35 +129,50 @@ An example response for the above request could be:
     "rawData": [0,1,226,123],
     "end": "true"
 }
+```
 
 * If the register returns a character dataType then dataValue and formattedDataValue will be in double quotes.
+
 ** If the register is a lookup, i.e. 0x1000 (REG_SAFETY_TEST_RW_GRID_REGULATION) Grid_Regulation, formattedDataValue will bring back the appropriate textual lookup, i.e dataValue of 8, formattedDataValue of "CEB" whilst retaining the actual value in dataValue.
+
 *** 0x0743 (REG_SYSTEM_INFO_R_EMS_SN_BYTE_1_2) EMS SN byte1-2 is the only register which undergoes custom processing in Alpha2MQTT different to spec.  It returns the full 15 character ALxxxxxxxxxxxxxxx serial number in characterValue in one go, and the remaining EMS SN byte-x-y registers are not implemented as they are essentially pointless.
+
 **** There is a custom handled register address of 0xFFFF (REG_CUSTOM_SYSTEM_DATE_TIME) which returns the full system date/time in UK dd/MMM/yyyy HH:mm:ss format in formattedDataValue.
 
 ### Raw Read
 Alpha2MQTT supports over 200 registers via the handled route, however it does not cater for registers in the Safety TEST, ATE TEST, CT calibration and Battery - INDUSTRY series categories (with the exception of 0x1000 Grid_Regulation.)  This is because there are many more hundreds of registers in these categories, they are rather niche and on my inverter (SMILE B3) most I cannot query and test them.  As such, by providing a raw read functionality Alpha2MQTT can expose any of these registers to advanced users and it will return the raw data bytes for onward processing as you see fit.
 
 Publish MQTT messages to:
+```
 Alpha2MQTT/request/read/register/raw
+```
 With the following JSON
+```
 {
     "registerAddress": "0x0743",
     "dataBytes": 2
 }
+```
 where
+
 registerAddress is the hex address of the register as per the documentation, and where the register is a register in the Alpha documentation.
+
 dataBytes is the number of bytes to request, as per the Data format column in the Alpha documentation.  Usually follow the documentation, however for registers such as serial numbers / date times you can actually pass more and the Alpha system will duly return more.  For example, the documentation for EMS SN byte1-2 (0x0743) is two bytes
 however you can request 16.
+```
 {
     "registerAddress": "0x0743",
     "dataBytes": 16
 }
+```
 
 Alpha2MQTT will do the rest and will return the response via the following topic which you can subscribe to:
+```
 Alpha2MQTT/response/read/register/raw
+```
 
 An example response for the above request could be:
+```
 {
     "responseStatus": "readDataRegisterSuccess",
     "registerAddress": "0x0743",
@@ -148,27 +181,36 @@ An example response for the above request could be:
     "rawData": [65,76,55,48,48,49,48,50,49,48,54,48,51,50,49,0],
     "end": "true"
 }
-
+```
 
 ## Writing
 The AlphaESS documentation mentions two methods to write to registers, "Write Single Register" and "Write Data Register."  Alpha2MQTT supports both.  That said, when I started developing Alpha2MQTT I presumed Write Single Register was an easier way to write a two-byte register, requiring only a value, however my inverter never responds to any Write Single Register request.  The documentation on how to make a request and obtain the response is below, however it is only provided as 'Guidance.'  Write Data Register works with any two or four byte register and so for me, for my Smile B3 at least, is the go-to function.
 
 ### Write Raw Single Register
 Publish MQTT messages to:
+```
 Alpha2MQTT/request/write/register/raw/single
+```
 With the following JSON
+```
 {
     "registerAddress": "0x084F",
     "value": 1
 }
+```
 where
+
 registerAddress is the hex address of the register as per the documentation, and where the register is a register in the Alpha documentation.
+
 value is the base 10 integer you wish to write to the register.  For example, the above will write 1 to the Time period control flag register and Enable charge time period control and disable discharge time period control.
 
 Alpha2MQTT will do the rest and will return the response via the following topic which you can subscribe to:
+```
 Alpha2MQTT/response/write/register/raw/single
+```
 
 An example response for the above request could be:
+```
 {
     "responseStatus": "writeSingleRegisterSuccess",
     "registerAddress": "0x084F",
@@ -176,37 +218,52 @@ An example response for the above request could be:
     "rawDataSize": 4,
     "rawData": [8,79,0,1]
 }
+```
 
 In reality, you will probably only ever get the following back:
+```
 {
     "responseStatus": "noResponse",
     "registerAddress": "0x084F"
 }
+```
 In raw data, the Alpha documentation suggests byte one is the high byte of the register address, byte two is the low byte of the register address, byte three is the high byte of the value and byte four is the low byte of the value.
 Again, for me, this function does nothing and I only provide the above as guidance as to how it should work.  Instead, I recommend just using Write Raw Data Register as documented below.
 
 
 ### Write Raw Data Register
 Publish MQTT messages to:
+```
 Alpha2MQTT/request/write/register/raw/data
+```
 With the following JSON
+```
 {
     "registerAddress": "0x0881",
     "dataBytes": 4,
     "value": 30000
 }
+```
 where
+
 registerAddress is the hex address of the register as per the documentation, and where the register is a register in the Alpha documentation.
+
 dataBytes is the number of bytes to write as appropriate for the register in question as per the Data Format column.
+
 value is the base 10 integer you wish to write to the register.  For example, the above will write 30000 to the Dispatch active power register to essentially set battery charging to 2000W.
 
 * If the register has documentation which suggests values are in hex, keep in mind they need to be written in a single base 10 value (standard numbers you count with) regardless of whether you are writing to a single two-byte register or a double four-byte register.  And all hex values are read out in base 10 bytes, each between 0 and 255.  What does this mean exactly?  Take register 0x080F, the Modbus address.  The documentation refers to the value being 0x55 in hex.  This is true, however this will be read out in rawData as 0, 85.  If you wanted to change the Modbus address to 0x56, you would use a value of 86.  This would be read out in rawData as 0, 86.
+
 ** There is a hex starter for ten at the bottom of this document.
 
+
 Alpha2MQTT will do the rest and will return the response via the following topic which you can subscribe to:
+```
 Alpha2MQTT/response/write/register/raw/data
+```
 
 An example response for the above request could be:
+```
 {
     "responseStatus": "writeDataRegisterSuccess",
     "registerAddress": "0x0881",
@@ -215,50 +272,64 @@ An example response for the above request could be:
     "rawData": [8,129,0,2],
     "end": "true"
 }
+```
 In raw data, the Alpha documentation suggests byte one is the high byte of the register address, byte two is the low byte of the register address, byte three is the high byte of the number of registers and byte four is the low byte of the number of registers.  As this was a four byte register, in reality this is a double register, hence 2 in the last byte.
 
 You can technically be smart and write two registers at once if they are next to each other, but things are complex enough as they are so I advise you don't.
+
 If you take registerAddress of 0x0851 (Discharge Start Time 1,) it is next to registerAddress 0x0852 (Discharge Stop Time 1) and they are two bytes each.  So technically you can get away with writing a single value in to four dataBytes.
+
 If done individually:
+```
 {
     "registerAddress": "0x0851",
     "value":1,
     "dataBytes":2
 }
+```
+```
 {
     "registerAddress": "0x0852",
     "value":4,
     "dataBytes":2
 }
+```
 These two instructions will set start time 1 to 01:00 and stop time 1 to 04:00 respectively.
 
 But combined:
+```
 {
     "registerAddress": "0x0851",
     "value":65540,
     "dataBytes":4
 }
+```
 
 Why 65540?
+```
 
                 1AM             4AM
 00000000 00000001 00000000 00000100 = 65540 in base 10 decimal
-
+```
 
 # WARNING
 Double and triple check the dataBytes you send corresponds to the register in the Alpha Documentation.  Writing more or less may have unexpected outcomes and could break your inverter / require a factory reset!
+
 Double and triple check the value you send.  Writing an invalid or incompatible value may have unexpected outcomes and could break your inverter / require a factory reset!
+
 I have written to most of the R/W registers where I have had an interest in doing so, and it appears AlphaESS have developed this to be pretty robust where it just regards junk requests, however please, employ discretion at all times!
 
 
 ## Slave Errors
 If the request and response was successful, but the inverter failed to carry out the task for some reason, it will return a slave error.  The response to any request above will be of the following format if so:
+```
 {
     "responseStatus": "slaveError",
     "functionCode": 16,
     "slaveErrorCode": 321
     "end": "true"
 }
+```
 where
 slaveErrorCode is an unknown number.  Note that slave errors are not covered in the AlphaESS documentation, and not having received a slave error response I cannot give guidance as to what would cause errors, or what potential slaveErrorCodes could be.
 
@@ -269,14 +340,20 @@ slaveErrorCode is an unknown number.  Note that slave errors are not covered in 
 As we now have nifty functionality to command the inverter as we see fit, Alpha2MQTT has some MQTT topics to send messages to to instruct it to charge from the grid.  All this is doing is essentially batching up some appropriate Write Data Register commands and exposing them as a single MQTT topic for ease of use.
 
 Publish MQTT messages to:
+```
 Alpha2MQTT/request/set/charge
+```
+
 With the following JSON
+```
 {
     "watts": 2500,
     "socPercent": 100,
     "duration": 14400
 }
+```
 where
+
 watts is the power at which you want to charge the batteries with.  You can specify a number greater than the inverter/battery supports, the system will limit accordingly.  They provide this functionality in case you don't want to hammer your batteries at full power.  Note that it will charge at this rate utilising PV power too.  As such, if you set watts to 2500 and PV is generating 1000, it will pull 1500 from the grid.  As I suspect this will be largely used during the night when electricity rates are cheaper (such as Octopus Go / Economy 7) then this is largely irrelevant.
 
 socPercent is where you want charging to stop.  If you want to stop charging at 80% as you believe the weather tomorrow will do the rest, set this to 80.  Otherwise, usually it'll be 100.
@@ -285,14 +362,19 @@ duration is how long in seconds to put the inverter in this mode.  Charging from
 
 
 Alpha2MQTT will do the rest and will return the response via the following topic which you can subscribe to:
+```
 Alpha2MQTT/response/set/charge
+```
 
 An example response for the above request could be:
+```
 {
     "responseStatus": "setChargeSuccess",
     "failureDetail": ""
 }
+```
 where
+
 failureDetail will document at what point in the dispatch process the failure occurred.
 
 
@@ -300,14 +382,20 @@ failureDetail will document at what point in the dispatch process the failure oc
 As we now have nifty functionality to command the inverter as we see fit, Alpha2MQTT has some MQTT topics to send messages to to instruct it to discharge to the grid.  All this is doing is essentially batching up some appropriate Write Data Register commands and exposing them as a single MQTT topic for ease of use.
 
 Publish MQTT messages to:
+```
 Alpha2MQTT/request/set/discharge
+```
+
 With the following JSON
+```
 {
     "watts": 2500,
     "socPercent": 10,
     "duration": 1800
 }
+```
 where
+
 watts is the power at which you want to discharge the batteries with.  You can specify a number greater than the inverter/battery supports, the system will limit accordingly.  They provide this functionality in case you don't want to hammer your batteries at full power.
 
 socPercent is where you want discharging to stop.  If you want to stop discharging at 80% as you want to retain the bulk of your stored power, set this to 80.
@@ -316,14 +404,19 @@ duration is how long in seconds to put the inverter in this mode.  Discharging t
 
 
 Alpha2MQTT will do the rest and will return the response via the following topic which you can subscribe to:
+```
 Alpha2MQTT/response/set/discharge
+```
 
 An example response for the above request could be:
+```
 {
     "responseStatus": "setDishargeSuccess",
     "failureDetail": ""
 }
+```
 where
+
 failureDetail will document at what point in the dispatch process the failure occurred.
 
 
@@ -331,23 +424,35 @@ failureDetail will document at what point in the dispatch process the failure oc
 And if you want to come out of Force Charge From Grid / Force Discharge To Grid / Any other Dispatch mode, Alpha2MQTT has a similar topic you can leverage.  This topic essentially does a Write to register 0x0880 with value 0, to stop dispatch.
 
 Publish MQTT messages to:
+```
 Alpha2MQTT/request/set/normal
+```
+
 With the following JSON
+```
 {
     "void": 0
 }
+```
 where
+
 void is nothing, it just ensures there is some JSON to parse.
 
+
 Alpha2MQTT will do the rest and will return the response via the following topic which you can subscribe to:
+```
 Alpha2MQTT/response/set/normal
+```
 
 An example response for the above request could be:
+```
 {
     "responseStatus": "setNormalSuccess",
     "failureDetail": ""
 }
+```
 where
+
 failureDetail will document at what point in the dispatch process the failure occurred.
 
 
@@ -355,36 +460,50 @@ failureDetail will document at what point in the dispatch process the failure oc
 Finally, an option similar to state, however is done on a request/response basis, is to request batches of handled registers in Alpha2MQTT.  This is intensive and so is only recommended to be pulled when absolutely necessary.  Due to WiFi limitations as previously explained, it is recommended you pull in batches of 30.
 
 Publish MQTT messages to:
+```
 Alpha2MQTT/request/read/register/handled/all
+```
+
 With the following JSON
+```
 {
     "start": 0,
     "end": 30
 }
+```
 where
+
 start is the index of the first register in the handled register list to get.  They start at zero and end around 200.
+
 end is the index of the last register in the handled register list to get.  You don't need to worry about specifying an exact end position, Alpha2MQTT will stop at the last one.
 
 It is recommended you pull 0-70, 71,140, and so on, until you have obtained them all.
 
 Alpha2MQTT will do the rest and will return the response via the following topic which you can subscribe to:
+```
 Alpha2MQTT/response/read/register/handled/all
+```
 
 An example response for the above request will be in the likes of:
+```
 {
     "REG_BATTERY_HOME_R_BATTERY_POWER": 2845,
     ... repeat 40 or so times ...
     "REG_INVERTER_HOME_R_VOLTAGE_L1": 238.4
 }
-
+```
 
 ## Buffer Problems
 If at any point you request too much data for the MQTT buffer, you will receive the following payload back:
+```
 {
   "mqttError": "Length of payload exceeds X bytes.  Length would be Y bytes."
 }
+```
 where
+
 X is the number of bytes available in the buffer (max payload size - 1).
+
 Y is the number of bytes ended up being requested.
 
 
@@ -393,29 +512,39 @@ Y is the number of bytes ended up being requested.
 
 
 Thanks to Colin McGerty's (colin@mcgerty.co.uk) work on Sofar2MQTT which brought about my intrigue and on which some of Alpha2MQTT's program logic and circuitry is based.
+
 Thanks to the AlphaESS DE Team (https://www.alpha-ess.de/) for latest Modbus documentation and email support.
-Thanks to X and Y for testing.
+
 calcCRC by angelo.compagnucci@gmail.com and jpmzometa@gmail.com
 
 
 # How To Build
 ## Parts List
 1. ESP8266 Microcontroller
+
 2. MAX3485 or MAX485 TTL to RS485 board*
+
 3. Wemos 64x48 OLED Screen (optional)
+
 4. A small project board
+
 5. A few wires and a little solder
+
 
 *The MAX3485 (which is blue, not red like the MAX3485 shown here) is preferred as it is much more stable because it uses 3.3v logic, just like the ESP8366. The MAX485 uses 5v logic but is somewhat tolerant of 3.3v and is generally cheaper and more widely available.  I use a MAX3485 and I recommend you do too.  MAX3485 boards do not have DR and RE flow control pins, so there are two circuit diagrams below to show wiring of each.
 
 ![D1 Mini](Pics/D1mini.png)
 I bought [this D1 mini](https://www.ebay.co.uk/itm/363891216533)
+
 ![OLED Shield](Pics/OLEDShield.png)
 I bought [this OLED shield](https://www.ebay.co.uk/itm/313603433730?var=612417201805)
+
 ![Prototyping Board](Pics/PrototypingBoard.png)
 I bought [this prototyping board](https://www.ebay.co.uk/itm/265235487263)
+
 ![MAX3485](Pics/MAX3485.png)
 I bought [this MAX3845](https://www.ebay.co.uk/itm/403668533766)
+
 ![Wire](Pics/Wire.png)
 For wire I suggest you strip a standard network cable and use wires from that.  You will probably have plenty of 1m cables spare which came with your broadband router, there are plenty of colours to choose from and it is a thin robust wire which will bend easily - and you can source them from the offcuts of the RS485 cable you'll be making - more on that later.
 
@@ -427,6 +556,7 @@ For wire I suggest you strip a standard network cable and use wires from that.  
 ![Wiring Diagram MAX485](Pics/MAX485 Circuit.PNG)
 
 D6 is the receiving pin on the D1 mini.  It connects to the transmitting TXD pin on the 3845 or RO on the 845.
+
 D7 is the transmitting pin on the D1 mini.  It connects to the receiving RXD pin on the 3845 or DI on the 845.
 
 If using the 845, make sure you connect the DR and RE pins together.
@@ -445,6 +575,7 @@ Here's how it looks when completed.
 Download the six source files into a folder called Alpha2MQTT.  The source files needed are Alpha2MQTT.ino, Definitions.h, RegisterHandler.cpp, RegisterHandler.h, RS485Handler.cpp, RS485Handler.h.
 
 Configure Alpha2MQTT by opening up Definitions.h and verifying/customising the following definitions for your need:
+```
 - Set your inverter (delete the //) between lines 25-28 and ensure the rest are commented out by adding //.
 - Set your WiFi Access Point name on line 32.
 - Set your WiFi password on line 33.
@@ -455,7 +586,7 @@ Configure Alpha2MQTT by opening up Definitions.h and verifying/customising the f
 - Set your Alpha2MQTT device name on line 43.  This is the device name presented on your network and is also how MQTT topics begin.  This document assumes Alpha2MQTT.
 - Set your AlphaESS inverter's slave id on line 46.  By default this is 0x55 and shouldn't need changing unless you've changed it via Modbus or via inverters which have an integrated display.  Don't change it.
 - Set your maximum payload size on line 54.  ESP8266's work well with 4096 bytes which is enough for 70 to 80 registers on any schedule or request.
-
+```
 
 ## Software Configuration
 ### Arduino IDE
@@ -464,8 +595,11 @@ Download and install the [Arduino IDE](https://www.arduino.cc/en/software).
 Once installed and set up, you'll need the libraries for the ESP8266. Follow [this guide](https://randomnerdtutorials.com/how-to-install-esp8266-board-arduino-ide/) if you haven't completed that step before.
 ### Other Libraries
 Add a few more libraries using the Tools / Manage Libraries menu:
+
 1. PubSubClient
+
 2. Adafruit GFX
+
 3. Adafruit SSD1306 Wemos Mini OLED
 
 (Even if you are not using the OLED screen, you should install the Adafruit libraries or it will not compile.)
@@ -484,14 +618,18 @@ In the Modbus documentation it indicates that the CAN/RS485 port uses a twisted 
 [!RJ45](Pics/RJ45Pinout.PNG)
 
 At first there were lots of questions.
+
 Do Alpha enable Modbus out of the box?
+
 Is my coding right?
+
 Is my circuit wired up right?
 
 After lots of checking and debugging, for my B3, I took a spare network cable from my router box, and cut off one end and trimmed back the sheath.  I split the pairs into Orange White + Orange / Green White + Green / Blue White + Blue / Brown White + Brown, and plugged the other end in the inverter.  I used a multi-meter against all of the pairs to see which one (if any) brought back a voltage.  I found a steady voltage (4.6V) across the Blue White + Blue pins, with Blue White being positive.  For clarity, Blue (Pin 4) was B-, Blue White (Pin 5) was A+.
 I cannot guarantee this is the same for every model, but it *probably* is.
 
 So what I ended up with was a hybrid cable looking like so:
+
 [!Cable](Pics/B3cable.jpg)
 
 Connect the Alpha2MQTT unit to the 5v micro USB power supply you just found.  Connect the RJ45 to the CAN/RS485 port on your inverter and connect Blue White to A+ and Blue to B-.  (If your inverter used a different set of colours, please let me know so I can update the documentation.)
@@ -518,34 +656,46 @@ Status bar.  It will display A2M in the top left corner, and in the top right wi
 Current status, depending on what that status is.
 
 ### Connecting to WiFi
+```
 Connecting
 WiFi...
 Version Number
+```
 
 ### Connecting to MQTT
+```
 Connecting
 MQTT...
 Version Number
+```
 
 ### Comms established with inverter
+```
 Hello
 Serial Number
 Serial Number Continued
+```
 
 ### Normal Operation
+```
 Normal
 Battery Power (W) (-charging, +discharging)
 Battery SOC (%)
+```
 
 ### Forced Charging Operation
+```
 Charging
 Battery Power (W) (-charging, +discharging)
 Battery SOC (%)
- 
+ ```
+
 ### Forced Discharging Operation
+```
 Charging
 Battery Power (W) (-charging, +discharging)
 Battery SOC (%)
+```
 
 ### CRC Errors
 If a message is read from the inverter that fails the CRC checksum, line 4 will display one of "BAD-CRC-UR" or "BAD-CRC-HB".  This could be caused by a loose or bad RS485 wire or by unsupported features. A few of these is normal, a lot could indicate a problem.
