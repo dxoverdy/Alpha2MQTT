@@ -465,7 +465,7 @@ failureDetail will document at what point in the dispatch process the failure oc
 
 
 ## Read All Handled Registers
-Finally, an option similar to state, however is done on a request/response basis, is to request batches of handled registers in Alpha2MQTT.  This is intensive and so is only recommended to be pulled when absolutely necessary.  Due to WiFi limitations as previously explained, it is recommended you pull in batches of 70.
+Finally, an option similar to state, however is done on a request/response basis, is to request batches of handled registers in Alpha2MQTT.  This is intensive and so is only recommended to be pulled when absolutely necessary.  Due to memory limitations as previously explained, it is recommended you pull in batches of 70.
 
 Publish MQTT messages to:
 ```
