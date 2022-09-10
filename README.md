@@ -16,7 +16,7 @@ Storion T30.
 
 Alpha2MQTT (A2M) is a remote control interface for AlphaESS inverters which support Modbus via RS485.
 
-It allows full remote control of the inverter (i.e. forcibly charge the battery from the grid on demand / forcibly discharge the battery to the grid on demand / return to normal mode on demand / setting date / time / PV capacity as displayed on the Alpha Cloud / and a lot (A LOT) more) and can report various information based on repeating schedules of every 10 seconds, every 1 minute, every 5 minutes, every hour and every day.
+It allows full remote control of the inverter (i.e. forcibly charge the battery from the grid on demand / forcibly discharge the battery to the grid on demand / return to normal mode on demand / setting date / time / PV capacity as displayed on the Alpha Cloud / and a **lot** more and can report various information based on repeating schedules of every 10 seconds, every 1 minute, every 5 minutes, every hour and every day.
 
 Communication with Alpha2MQTT is via MQTT and can be driven by home integration solutions such as [Home Assistant](https://www.home-assistant.io/), [Node-Red](https://nodered.org/) and anything else which is MQTT compatible.
 
@@ -39,7 +39,7 @@ Alpha2MQTT/state/hour/one
 Alpha2MQTT/state/day/one
 ```
 
-Each of the schedules can be customised to report a number* / any combination of register values.  Alpha2MQTT has been developed this way to give flexibility.  For example, there is probably no need to report grid voltage every ten seconds, instead once every five and in doing so we are limiting network traffic over MQTT and onward processing in software such as Home Assistant.
+Each of the schedules can be customised to report a number* / any combination of register values.  Alpha2MQTT has been developed this way to give flexibility.  For example, there is probably no need to report grid voltage every ten seconds, instead once every five minutes and in doing so we are limiting network traffic over MQTT and onward processing in software such as Home Assistant.
 
 
 ### By default
@@ -89,7 +89,7 @@ Total PV Energy Generated (kWh)
 Total PV Energy Consumed (kWh)
 ```
 
-You can customise the schedules by modifying Alpha2MQTT.ino.  Search for 'Schedules' and add or removing registers as you see fit from each schedule.  The list of supported registers begins on line 85 in Definitions.h.  A register name which contains _R_ is read only, one which contains _RW_ is read/write, and one which contains _W_ is write only.
+You can customise the schedules by modifying Alpha2MQTT.ino.  Search for 'Schedules' and add or remove registers as you see fit from each schedule.  The list of supported registers begins on line 85 in Definitions.h.  A register name which contains _R_ is read only, one which contains _RW_ is read/write, and one which contains _W_ is write only.
 
 An example response for any subscribed state is a JSON of name/value pairs which are separated by commas, for example:
 ```
@@ -140,14 +140,14 @@ An example response for the above request could be:
 
 * If the register returns a character dataType then dataValue and formattedDataValue will be in double quotes.
 
-* If the register is a lookup, i.e. 0x1000 (REG_SAFETY_TEST_RW_GRID_REGULATION) Grid_Regulation, formattedDataValue will bring back the appropriate textual lookup, i.e dataValue of 8, formattedDataValue of "CEB" whilst retaining the actual value in dataValue.
+* If the register is a lookup, i.e. 0x1000 (REG_SAFETY_TEST_RW_GRID_REGULATION) Grid_Regulation, formattedDataValue will bring back the appropriate textual lookup, i.e dataValue of 8, formattedDataValue of "CEB".
 
 * 0x0743 (REG_SYSTEM_INFO_R_EMS_SN_BYTE_1_2) EMS SN byte1-2 is the only register which undergoes custom processing in Alpha2MQTT different to spec.  It returns the full 15 character ALxxxxxxxxxxxxxxx serial number in characterValue in one go, and the remaining EMS SN byte-x-y registers are not implemented as they are essentially pointless.
 
 * There is a custom handled register address of 0xFFFF (REG_CUSTOM_SYSTEM_DATE_TIME) which returns the full system date/time in UK dd/MMM/yyyy HH:mm:ss format in formattedDataValue.
 
 ### Raw Read
-Alpha2MQTT supports over 200 registers via the handled route, however it does not cater for registers in the Safety TEST, ATE TEST, CT calibration and Battery - INDUSTRY series categories (with the exception of 0x1000 Grid_Regulation.)  This is because there are many more hundreds of registers in these categories, they are rather niche and on my inverter (SMILE B3) most I cannot query and test them.  As such, by providing a raw read functionality Alpha2MQTT can expose any of these registers to advanced users and it will return the raw data bytes for onward processing as you see fit.
+Alpha2MQTT supports over 200 registers via the handled route, however it does not cater for registers in the Safety TEST, ATE TEST, CT calibration and Battery - INDUSTRY series categories (with the exception of 0x1000 Grid_Regulation.)  This is because there are many more hundreds of registers in these categories, they are rather niche and on my inverter (SMILE B3) most I cannot query and test.  As such, by providing a raw read functionality Alpha2MQTT can expose any of these registers to advanced users and it will return the raw data bytes for onward processing as you see fit.
 
 Publish MQTT messages to:
 ```
@@ -191,7 +191,7 @@ An example response for the above request could be:
 ```
 
 ## Writing
-The AlphaESS documentation mentions two methods to write to registers, "Write Single Register" and "Write Data Register."  Alpha2MQTT supports both.  That said, when I started developing Alpha2MQTT I presumed Write Single Register was an easier way to write a two-byte register, requiring only a value, however my inverter never responds to any Write Single Register request.  The documentation on how to make a request and obtain the response is below, however it is only provided as 'Guidance.'  Write Data Register works with any two or four byte register and so for me, for my Smile B3 at least, is the go-to function.
+The AlphaESS documentation mentions two methods to write to registers, "Write Single Register" and "Write Data Register."  Alpha2MQTT supports both.  That said, when I started developing Alpha2MQTT I presumed Write Single Register was an easier way to write a two-byte register, requiring only a value, however my inverter never responds to any Write Single Register request.  The documentation on how to make a request and obtain the response is below, however it is only provided as *Guidance*.  Write Data Register works with any two or four byte register and so for me, for my Smile B3 at least, is the go-to function.
 
 ### Write Raw Single Register
 Publish MQTT messages to:
@@ -207,7 +207,7 @@ With the following JSON
 ```
 where
 
-registerAddress is the hex address of the register as per the documentation, and where the register is a register in the Alpha documentation.
+registerAddress is the hex address of the register as per the documentation.
 
 value is the base 10 integer you wish to write to the register.  For example, the above will write 1 to the Time period control flag register and Enable charge time period control and disable discharge time period control.
 
@@ -253,7 +253,7 @@ With the following JSON
 ```
 where
 
-registerAddress is the hex address of the register as per the documentation, and where the register is a register in the Alpha documentation.
+registerAddress is the hex address of the register as per the documentation.
 
 dataBytes is the number of bytes to write as appropriate for the register in question as per the Data Format column.
 
@@ -324,7 +324,7 @@ Double and triple check the dataBytes you send corresponds to the register in th
 
 Double and triple check the value you send.  Writing an invalid or incompatible value may have unexpected outcomes and could break your inverter / require a factory reset!
 
-I have written to most of the R/W registers where I have had an interest in doing so, and it appears AlphaESS have developed this to be pretty robust where it just regards junk requests, however please, employ discretion at all times!
+I have written to most of the R/W registers where I have had an interest in doing so, and it appears AlphaESS have developed this to be pretty robust where it just disregards junk requests, however please, employ discretion at all times!
 
 
 ## Slave Errors
@@ -465,7 +465,7 @@ failureDetail will document at what point in the dispatch process the failure oc
 
 
 ## Read All Handled Registers
-Finally, an option similar to state, however is done on a request/response basis, is to request batches of handled registers in Alpha2MQTT.  This is intensive and so is only recommended to be pulled when absolutely necessary.  Due to WiFi limitations as previously explained, it is recommended you pull in batches of 30.
+Finally, an option similar to state, however is done on a request/response basis, is to request batches of handled registers in Alpha2MQTT.  This is intensive and so is only recommended to be pulled when absolutely necessary.  Due to WiFi limitations as previously explained, it is recommended you pull in batches of 70.
 
 Publish MQTT messages to:
 ```
@@ -476,7 +476,7 @@ With the following JSON
 ```
 {
     "start": 0,
-    "end": 30
+    "end": 70
 }
 ```
 where

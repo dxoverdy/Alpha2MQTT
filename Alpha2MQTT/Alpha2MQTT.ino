@@ -24,7 +24,7 @@ First, go and customise options at the top of Definitions.h!
 #include <Adafruit_SSD1306.h>
 
 // Device parameters
-char _version[6] = "v1.1";
+char _version[6] = "v1.11";
 
 // WiFi parameters
 WiFiClient _wifi;
@@ -836,7 +836,7 @@ void updateRunstate()
 			request = _registerHandler->readHandledRegister(REG_BATTERY_HOME_R_BATTERY_POWER, &response);
 			if (request == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
 			{
-				sprintf(batteryPower, "Bat: %dW", response.signedShortValue);
+				sprintf(batteryPower, "Bat:%dW", response.signedShortValue);
 			}
 		}
 
