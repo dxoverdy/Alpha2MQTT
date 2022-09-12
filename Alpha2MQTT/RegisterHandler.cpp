@@ -86,7 +86,6 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 {
 	// To account for custom registers just before sending
 	uint16_t registerAddressToSend;
-
 	modbusRequestAndResponseStatusValues result = modbusRequestAndResponseStatusValues::preProcessing;
 
 	// Slave Address
@@ -98,6 +97,10 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 	// CRC Low Byte
 	// CRC High Byte
 
+	// For custom registers
+	int16_t batteryPower;
+	int32_t pvPower;
+	int32_t gridPower;
 
 	// Determine number of registers/data type/mqtt name based on register passed in
 	switch (registerAddress)
@@ -1641,44 +1644,118 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 		rs->registerCount = 3;
 		break;
 	}
+
+	case REG_CUSTOM_LOAD:
+	{
+		// Custom, going to do the date/time formatting, so swap back to register for YEAR/MONTH and pull 3 bytes.
+		rs->returnDataType = modbusReturnDataType::signedInt;
+		strcpy(rs->mqttName, "REG_CUSTOM_LOAD");
+		rs->registerCount = 2;
+		break;
+	}
+
 	default:
 	{
 		// Not a valid register we have written code to handle, do something here to prevent the send
 		result = modbusRequestAndResponseStatusValues::notHandledRegister;
-		//rs->statusMessage = MODBUS_REQUEST_AND_RESPONSE_NOT_HANDLED_REGISTER_DESC;
-		//rs->statusDisplayMessage = MODBUS_REQUEST_AND_RESPONSE_NOT_HANDLED_REGISTER_DISPLAY_DESC;
 		strcpy(rs->statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_NOT_HANDLED_REGISTER_MQTT_DESC);
 		break;
 	}
 	}
 
+
 	// If a custom register address we've made up to do some of our own work, swap it around here.
 	if (result == modbusRequestAndResponseStatusValues::preProcessing)
 	{
-		switch (registerAddress)
+		if (registerAddress == REG_CUSTOM_LOAD)
 		{
-		case REG_CUSTOM_SYSTEM_DATE_TIME:
-		{
-			registerAddressToSend = REG_SYSTEM_INFO_RW_SYSTEM_TIME_YEAR_MONTH;
-			break;
+			strcpy(rs->returnDataTypeDesc, MODBUS_RETURN_DATA_TYPE_SIGNED_INT_DESC);
+
+			/*
+			Load is not exposed by the inverter, so we need a custom routine to pull the three registers relevantand do the calculations on the chip.
+			OK so theory is
+			Cosumption is PV generating
+			Plus the grid, providing that the grid IS pulling
+			Plus the battery, providing that it is discharging AND grid not pulling(i.e. not forcibly discharging to grid)
+			*/
+
+			// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
+			uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_PV_METER_R_TOTAL_ACTIVE_POWER_1 >> 8, REG_PV_METER_R_TOTAL_ACTIVE_POWER_1 & 0xff, 0, 2, 0, 0 };
+			// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
+			result = _modBus->sendModbus(frame, sizeof(frame), rs);
+			if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+			{
+				
+				pvPower = (int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]);
+				if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+				{
+					// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
+					uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_GRID_METER_R_TOTAL_ACTIVE_POWER_1 >> 8, REG_GRID_METER_R_TOTAL_ACTIVE_POWER_1 & 0xff, 0, 2, 0, 0 };
+					// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
+					result = _modBus->sendModbus(frame, sizeof(frame), rs);
+					gridPower = (int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]);
+					if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+					{
+						// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
+						uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_BATTERY_HOME_R_BATTERY_POWER >> 8, REG_BATTERY_HOME_R_BATTERY_POWER & 0xff, 0, 1, 0, 0 };
+						// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
+						result = _modBus->sendModbus(frame, sizeof(frame), rs);
+						if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+						{
+							batteryPower = (int16_t)(rs->data[0] << 8 | rs->data[1]);
+							rs->signedIntValue =
+								pvPower
+								-
+								// Minus feeding, if feeding
+								(gridPower < 0 ? abs(gridPower) : 0)
+								+
+								// Plus purchase, if purchasing
+								(gridPower > 0 ? gridPower : 0)
+								-
+								// Minus battery, if charging
+								(batteryPower < 0 ? abs(batteryPower) : 0)
+								+
+								// Plus battery, if discharging
+								(batteryPower > 0 ? batteryPower : 0);
+
+							rs->dataSize = 4;
+							rs->data[0] = rs->signedIntValue >> 24;
+							rs->data[1] = rs->signedIntValue >> 16;
+							rs->data[2] = rs->signedIntValue >> 8;
+							rs->data[3] = rs->signedIntValue & 0xff;
+						}
+					}
+				}
+			}
+
 		}
-		default:
+		else
 		{
-			registerAddressToSend = registerAddress;
-			break;
-		}
+			// Normal route, however with a quick check for registers which may need switching
+			switch (registerAddress)
+			{
+			case REG_CUSTOM_SYSTEM_DATE_TIME:
+			{
+				registerAddressToSend = REG_SYSTEM_INFO_RW_SYSTEM_TIME_YEAR_MONTH;
+				break;
+			}
+			default:
+			{
+				registerAddressToSend = registerAddress;
+				break;
+			}
+			}
+
+			if (result == modbusRequestAndResponseStatusValues::preProcessing)
+			{
+				// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
+				uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, registerAddressToSend >> 8, registerAddressToSend & 0xff, 0, rs->registerCount, 0, 0 };
+
+				// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
+				result = _modBus->sendModbus(frame, sizeof(frame), rs);
+			}
 		}
 	}
-
-	if (result == modbusRequestAndResponseStatusValues::preProcessing)
-	{
-		// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
-		uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, registerAddressToSend >> 8, registerAddressToSend & 0xff, 0, rs->registerCount, 0, 0 };
-
-		// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
-		result = _modBus->sendModbus(frame, sizeof(frame), rs);
-	}
-
 
 	if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
 	{
@@ -4136,6 +4213,17 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			}
 			break;
 		}
+
+		case REG_CUSTOM_LOAD:
+		{
+			// Type: Signed Integer
+			// 1W/bit
+			// Current generation
+			// Positive = Load pulling / In theory should never be negative.
+			sprintf(rs->dataValueFormatted, "%d", rs->signedIntValue);
+			break;
+		}
+
 		case REG_CUSTOM_SYSTEM_DATE_TIME:
 		{
 			// Custom date/time returned as text based on the three registers.

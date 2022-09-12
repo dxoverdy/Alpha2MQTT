@@ -74,13 +74,13 @@ static struct mqttState _mqttTenSecondStatusRegisters[] PROGMEM =
 	{ REG_PV_METER_R_TOTAL_ACTIVE_POWER_1, "REG_PV_METER_R_TOTAL_ACTIVE_POWER_1" },						// Total PV Power (+/-)
 	{ REG_INVERTER_HOME_R_POWER_TOTAL_1, "REG_INVERTER_HOME_R_POWER_TOTAL_1" },							// Total Inverter Power (+/-)
 	{ REG_INVERTER_HOME_R_CURRENT_L1, "REG_INVERTER_HOME_R_CURRENT_L1" },								// Inverter Current (L1) (Phase A)
-	{ REG_INVERTER_HOME_R_INVERTER_TEMP, "REG_INVERTER_HOME_R_INVERTER_TEMP" }							// Inverter Temp
-
+	{ REG_INVERTER_HOME_R_INVERTER_TEMP, "REG_INVERTER_HOME_R_INVERTER_TEMP" },							// Inverter Temp
+	{ REG_CUSTOM_LOAD, "REG_CUSTOM_LOAD" }																// Consumption
 	
 	/*
 	* 
-	* Alpha don't appear to expose Solar Current, Battery Cycles, NOR HOUSE LOAD believe it or not
-	* Will need to do house load in Node Red or other based on a combination of registers above (batt power / grid power / pv power)
+	* Alpha don't appear to expose Solar Current, Battery Cycles
+	* They don't expose Load either via a register, it is a calculation which Alpha ESS provided the logic for.
 	* Alpha don't also expose today's generation / exported / purchased / consumed, so if using Home Assistant leverage
 	* https://www.home-assistant.io/integrations/integration/#energy
 	* Will convert regular submitted power readings (in W or kW) into kWh for use in Utility Meters
@@ -943,7 +943,7 @@ addStateInfo
 
 Query the handled register in the usual way, and add the cleansed output to the buffer
 */
-modbusRequestAndResponseStatusValues addStateInfo(uint16_t registerAddress, char* registerName, bool addComma, modbusRequestAndResponseStatusValues &resultAddedToPayload)
+modbusRequestAndResponseStatusValues addStateInfo(uint16_t registerAddress, char* registerName, bool addComma, modbusRequestAndResponseStatusValues& resultAddedToPayload)
 {
 	unsigned int val;
 	char stateAddition[128] = ""; // 128 should cover individual additions to the payload
@@ -958,13 +958,13 @@ modbusRequestAndResponseStatusValues addStateInfo(uint16_t registerAddress, char
 	{
 		// Add a quote if the return data type is character or has been converted from lookup to description.
 		addQuote = (response.returnDataType == modbusReturnDataType::character || response.hasLookup);
-		
+
 		sprintf(stateAddition, "    \"%s\": %s%s%s%s\r\n", registerName, addQuote ? "\"" : "", response.dataValueFormatted, addQuote ? "\"" : "", addComma ? "," : "");
 
 		/*
 		ABC,
-	    1234 LEN
-	    0123
+		1234 LEN
+		0123
 		*/
 
 		// Let the onward process also know if the buffer failed.
@@ -979,6 +979,8 @@ modbusRequestAndResponseStatusValues addStateInfo(uint16_t registerAddress, char
 	}
 	return result;
 }
+
+
 
 
 modbusRequestAndResponseStatusValues addToPayload(char* addition)
@@ -1074,8 +1076,8 @@ void sendDataFromAppropriateArray(mqttState* registerArray, int numberOfRegister
 			memcpy_P(&singleRegister.registerAddress, &registerArray[l].registerAddress, 2);
 			strcpy_P(singleRegister.mqttName, registerArray[l].mqttName);
 
-
 			result = addStateInfo(singleRegister.registerAddress, singleRegister.mqttName, l < (numberOfRegisters - 1), resultAddedToPayload);
+			
 			if (resultAddedToPayload == modbusRequestAndResponseStatusValues::payloadExceededCapacity)
 			{
 				// If the response to addStateInfo is payload exceeded get out, We will permit failing registers to carry on and try the next one.

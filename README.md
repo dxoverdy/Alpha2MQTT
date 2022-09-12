@@ -56,6 +56,7 @@ PV Power (+/-) (W)
 Inverter Power (+/-) (W)
 Inverter Current (Phase A) (A)
 Inverter Temp (DegC)
+Load (W)
 ```
 
 #### Every minute:
@@ -145,6 +146,9 @@ An example response for the above request could be:
 * 0x0743 (REG_SYSTEM_INFO_R_EMS_SN_BYTE_1_2) EMS SN byte1-2 is the only register which undergoes custom processing in Alpha2MQTT different to spec.  It returns the full 15 character ALxxxxxxxxxxxxxxx serial number in characterValue in one go, and the remaining EMS SN byte-x-y registers are not implemented as they are essentially pointless.
 
 * There is a custom handled register address of 0xFFFF (REG_CUSTOM_SYSTEM_DATE_TIME) which returns the full system date/time in UK dd/MMM/yyyy HH:mm:ss format in formattedDataValue.
+
+* There is a custom handled register address of 0xFFFE (REG_CUSTOM_LOAD) which returns current consumption, also known as load.  It returns in watts.
+
 
 ### Raw Read
 Alpha2MQTT supports over 200 registers via the handled route, however it does not cater for registers in the Safety TEST, ATE TEST, CT calibration and Battery - INDUSTRY series categories (with the exception of 0x1000 Grid_Regulation.)  This is because there are many more hundreds of registers in these categories, they are rather niche and on my inverter (SMILE B3) most I cannot query and test.  As such, by providing a raw read functionality Alpha2MQTT can expose any of these registers to advanced users and it will return the raw data bytes for onward processing as you see fit.

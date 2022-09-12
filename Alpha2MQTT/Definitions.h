@@ -429,6 +429,7 @@ Customise these options as per README.txt.  Please read README.txt before contin
 
 
 // Custom in Alpha2ESS
+#define REG_CUSTOM_LOAD																0xFFFE	// // 1W/bit							// 4 Bytes		// Integer
 #define REG_CUSTOM_SYSTEM_DATE_TIME													0xFFFF	// dd/MMM/yyyy HH:mm:ss					// N/A			// Unsigned Char
 // End of Handled Registered
 
