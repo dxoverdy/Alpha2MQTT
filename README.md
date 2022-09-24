@@ -14,6 +14,8 @@ Storion T30.
 
 ![Alpha2MQTT](Pics/Normal.jpg)
 
+[![Watch the boot up sequence](https://img.youtube.com/vi/3hRjaeRWqJ4/0.jpg)](https://youtu.be/3hRjaeRWqJ4)
+
 Alpha2MQTT (A2M) is a remote control interface for AlphaESS inverters which support Modbus via RS485.
 
 It allows full remote control of the inverter (i.e. forcibly charge the battery from the grid on demand / forcibly discharge the battery to the grid on demand / return to normal mode on demand / setting date / time / PV capacity as displayed on the Alpha Cloud / and a **lot** more and can report various information based on repeating schedules of every 10 seconds, every 1 minute, every 5 minutes, every hour and every day.
