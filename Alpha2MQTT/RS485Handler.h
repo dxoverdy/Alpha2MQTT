@@ -24,11 +24,14 @@ Handles Modbus requests and responses in a tidy class separate from main program
 
 // SoftwareSerial is used to create a second serial port, which will be deidcated to RS485.
 // The built-in serial port remains available for flashing and debugging.
+
+#define RS485_TX HIGH						// Transmit control pin goes high
+#define RS485_RX LOW						// Receive control pin goes low
+
+
 #define SERIAL_COMMUNICATION_CONTROL_PIN D5	// Transmission set pin
-#define RS485_TX HIGH						// Transmit D5 goes high
-#define RS485_RX LOW						// Receive D5 goes low
-#define RXPin D6							// Serial Receive pin
-#define TXPin D7							// Serial Transmit pin
+#define RX_PIN D6							// Serial Receive pin
+#define TX_PIN D7							// Serial Transmit pin
 
 
 class RS485Handler

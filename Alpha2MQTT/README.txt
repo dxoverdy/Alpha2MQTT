@@ -290,8 +290,8 @@ Why 65540?
 
 
 ** WARNING **
-Double and triple check the dataBytes you send corresponds to the register in the Alpha Documentation.  Writing more or less may have unexpected outcomes and could break your inverter / require a factory reset!
-Double and triple check the value you send.  Writing an invalid or incompatible value may have unexpected outcomes and could break your inverter / require a factory reset!
+Double and triple check the dataBytes you send corresponds to the register in the Alpha Documentation.  Writing more or less may have unexpected outcomes!
+Double and triple check the value you send.  Writing an invalid or incompatible value may have unexpected outcomes!
 I have written to most of the R/W registers where I have had an interest in doing so, and it appears AlphaESS have developed this to be pretty robust where it just regards junk requests, however please, employ discretion at all times!
 
 

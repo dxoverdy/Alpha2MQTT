@@ -25,7 +25,7 @@ RS485Handler::RS485Handler()
 	// Set pin 'LOW' for 'Receive' mode
 	digitalWrite(SERIAL_COMMUNICATION_CONTROL_PIN, RS485_RX);
 
-	_RS485Serial = new SoftwareSerial(RXPin, TXPin);
+	_RS485Serial = new SoftwareSerial(RX_PIN, TX_PIN);
 	_RS485Serial->begin(INVERTER_BAUD_RATE);
 }
 
@@ -154,7 +154,7 @@ modbusRequestAndResponseStatusValues RS485Handler::listenResponse(modbusRequestA
 		}
 		inFrame[inByteNumZeroIndexed] = _RS485Serial->read();
 
-#ifdef DEBUG_LEVEL2_LEVEL2
+#ifdef DEBUG_LEVEL2
 		sprintf(_debugOutput, "Byte number zero indexed: %d", inByteNumZeroIndexed);
 		Serial.println(_debugOutput);
 #endif

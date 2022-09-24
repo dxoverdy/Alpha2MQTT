@@ -324,9 +324,9 @@ Why 65540?
 ```
 
 # WARNING
-Double and triple check the dataBytes you send corresponds to the register in the Alpha Documentation.  Writing more or less may have unexpected outcomes and could break your inverter / require a factory reset!
+Double and triple check the dataBytes you send corresponds to the register in the Alpha Documentation.  Writing more or less may have unexpected outcomes!
 
-Double and triple check the value you send.  Writing an invalid or incompatible value may have unexpected outcomes and could break your inverter / require a factory reset!
+Double and triple check the value you send.  Writing an invalid or incompatible value may have unexpected outcomes!
 
 I have written to most of the R/W registers where I have had an interest in doing so, and it appears AlphaESS have developed this to be pretty robust where it just disregards junk requests, however please, employ discretion at all times!
 
@@ -589,9 +589,9 @@ Use long pinned headers on your ESP8266 (D1 mini) if you are stacking the option
 
 I don't recommend soldering the anything permenantly to the prototyping board, besides headers and wiring.  This way, if you want to transfer the boards elsewhere it is just a case of unplugging them.
 
-Here's how it looks when completed.
+Here's how it looks when completed.  I ended up using an RJ45 socket and soldered the appropriate pair directly to the MAX3845 RX and TX pins so that I could simply plug/unplug the ethernet cable, without needing to unscrew/screw terminals on the MAX3845 every time.
 
-![Finished](Pics/Hello.jpg)
+![Finished](Pics/Connecting.jpg)
 ![Finished](Pics/Underside.jpg)
 
 If you are not comfortable soldering, appreciating the rather insignificant cost of the parts involved, for a small fee I will happily build and post you a working unit, and it will be a lot nicer looking than my tesbed unit!
