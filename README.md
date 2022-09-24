@@ -14,7 +14,9 @@ Storion T30.
 
 ![Alpha2MQTT](Pics/Normal.jpg)
 
+
 Watch the video of the boot up sequence here:
+
 [![Watch the boot up sequence](https://img.youtube.com/vi/3hRjaeRWqJ4/0.jpg)](https://youtu.be/3hRjaeRWqJ4)
 
 Alpha2MQTT (A2M) is a remote control interface for AlphaESS inverters which support Modbus via RS485.
