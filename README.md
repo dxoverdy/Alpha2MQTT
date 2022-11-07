@@ -8,9 +8,11 @@ SMILE-B3,
 
 SMILE-T10,
 
-Storion T30.
+Storion T30,
 
-*Newer models such as the SMILE B3 Plus and others are likely to work too.
+SMILE-B3-PLUS (Confirmed by a user of Alpha2MQTT.)
+
+*Others are likely to work too.
 
 ![Alpha2MQTT](Pics/Normal.jpg)
 
@@ -550,7 +552,7 @@ calcCRC by angelo.compagnucci@gmail.com and jpmzometa@gmail.com
 5. A few wires and a little solder
 
 
-*The MAX3485 (which is blue, not red like the MAX3485 shown here) is preferred as it is much more stable because it uses 3.3v logic, just like the ESP8366. The MAX485 uses 5v logic but is somewhat tolerant of 3.3v and is generally cheaper and more widely available.  I use a MAX3485 and I recommend you do too.  MAX3485 boards do not have DR and RE flow control pins, so there are two circuit diagrams below to show wiring of each.
+*The MAX3485 (red) is preferred as it is much more stable because it uses 3.3v logic, just like the ESP8366. The MAX485 (blue) uses 5v logic but is somewhat tolerant of 3.3v and is generally cheaper and more widely available.  I use a MAX3485 and I recommend you do too.  MAX3485 boards do not have DR and RE flow control pins, so there are two circuit diagrams below to show wiring of each.
 
 ![D1 Mini](Pics/D1mini.png)
 
@@ -617,6 +619,8 @@ Configure Alpha2MQTT by opening up Definitions.h and verifying/customising the f
 - Set your Alpha2MQTT device name on line 43.  This is the device name presented on your network and is also how MQTT topics begin.  This document assumes Alpha2MQTT.
 - Set your AlphaESS inverter's slave id on line 46.  By default this is 0x55 and shouldn't need changing unless you've changed it via Modbus or via inverters which have an integrated display.  Don't change it.
 - Set your maximum payload size on line 54.  ESP8266's work well with 4096 bytes which is enough for 70 to 80 registers on any schedule or request.
+- Set whether the device should auto restart every so many hours.  This is for specific routers only.  Uncomment line 70 if you want to use this feature
+- Set the number of hours for an automatic restart on line 71
 ```
 
 ## Software Configuration
@@ -730,3 +734,15 @@ Battery SOC (%)
 If a message is read from the inverter that fails the CRC checksum, line 4 will display one of "BAD-CRC-UR" or "BAD-CRC-HB".  This could be caused by a loose or bad RS485 wire or by unsupported features. A few of these is normal, a lot could indicate a problem.
 
 During WiFi Connection and MQTT Connection phases, line 4 shows the Alpha2MQTT software version.  Check that you have the latest version at https://github.com/dxoverdy/Alpha2MQTT
+
+### Alpha2MQTTs Around The World
+If you have your own Alpha2MQTT, be sure to send me a picture of it in action so I can add it to this page!
+
+AC from UK - Even got a box sorted for it!
+
+![Alpha2MQTT](Pics/AC.jpg)
+
+
+GS from UK - Wall mounted using grips
+
+![Alpha2MQTT](Pics/GS.jpg)

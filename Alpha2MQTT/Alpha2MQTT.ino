@@ -467,6 +467,8 @@ The loop function runs overand over again until power down or reset
 */
 void loop()
 {
+	static unsigned long autoReboot = 0;
+
 	// Refresh LED Screen, will cause the status asterisk to flicker
 	updateOLED(true, "", "", "");
 
@@ -491,6 +493,14 @@ void loop()
 	// Read and transmit all configured data to MQTT
 	sendData();
 
+	
+	// Force Restart?
+#ifdef FORCE_RESTART
+	if (checkTimer(&autoReboot, FORCE_RESTART_HOURS * 60 * 60 * 1000))
+	{
+		ESP.restart();
+	}
+#endif
 }
 
 

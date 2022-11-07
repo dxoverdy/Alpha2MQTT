@@ -33,7 +33,7 @@ Customise these options as per README.txt.  Please read README.txt before contin
 #define WIFI_PASSWORD	""
 
 // Update with your MQTT Broker details
-#define MQTT_SERVER	"192.168.1.40"
+#define MQTT_SERVER	"192.168.1.135"
 #define MQTT_PORT	1883
 #define MQTT_USERNAME	"Alpha"			// Empty string for none.
 #define MQTT_PASSWORD	""
@@ -62,6 +62,13 @@ Customise these options as per README.txt.  Please read README.txt before contin
 // I beg to differ on this, I'd say it's more 0.396 based on my tests
 // However make it easily customisable here
 #define DISPATCH_SOC_MULTIPLIER 0.4
+
+
+// A user informed me that their router leverages leases on network connections which can't be disabled.
+// I.e. when lease expires, WiFi doesn't drop but data stops.
+// If FORCE_RESTART is defined, then the system will auto-reboot every X many hours as configured in FORCE_RESTART_HOURS
+//#define FORCE_RESTART
+#define FORCE_RESTART_HOURS 49
 
 
 #if (!defined INVERTER_SMILE_B3) && (!defined INVERTER_SMILE5) && (!defined INVERTER_SMILE_T10) && (!defined INVERTER_STORION_T30)

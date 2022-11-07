@@ -15,6 +15,8 @@ SMILE5, SMILE-B3, SMILE-T10, Storion T30.
 The default baud rates 9600, 9600, 9600 and 19200 respectively.
 The default slave address is 0x55.
 
+Separately, users have confirmed the following other devices work
+SMILE-B3-PLUS using a default baud rate of 9600.
 
 
 Useful Terms:
@@ -44,7 +46,8 @@ Configure Alpha2MQTT by opening up Definitions.h and verifying/customising the f
 - Set your Alpha2MQTT device name on line 43.  This is the device name presented on your network and is also how MQTT topics begin.  This document assumes Alpha2MQTT.
 - Set your AlphaESS inverter's slave id on line 46.  By default this is 0x55 and shouldn't need changing unless you've changed it via Modbus or via inverters which have an integrated display.  Don't change it.
 - Set your maximum payload size on line 54.  ESP8266's work well with 4096 bytes which is enough for 70 to 80 registers on any schedule or request.
-
+- Set whether the device should auto restart every so many hours.  This is for specific routers only.  Uncomment line 70 if you want to use this feature
+- Set the number of hours for an automatic restart on line 71
 
 States:
 =======
