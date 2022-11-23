@@ -31,7 +31,9 @@ It's designed to run on an ESP8266 microcontroller (it was developed on a Wemos 
 
 Alpha2MQTT honours 1.23 AlphaESS Modbus documentation:
 
-[AlphaESS Modbus Documentation](https://www.alpha-ess.de/images/downloads/handbuecher/AlphaESS-Handbuch_SMILET30_ModBus_RTU_V123-DE.pdf)
+[AlphaESS Modbus Documentation](https://www.alpha-ess.de/images/downloads/handbuecher/AlphaESS-Handbuch_SMILE_ModBus_RTU_TCP_V2.pdf)
+
+[AlphaESS Register List](https://www.alpha-ess.de/images/downloads/handbuecher/AlphaESS_Register_Parameter_List.pdf)
 
 It is only available in German however Google offers PDF translation which I have used to good effect for English.
 
@@ -743,6 +745,18 @@ AC from UK - Even got a box sorted for it!
 ![Alpha2MQTT](Pics/AC.jpg)
 
 
-GS from UK - Wall mounted using grips
+GS from UK - Wall mounted using grips!
 
 ![Alpha2MQTT](Pics/GS.jpg)
+
+
+DS from UK - Used his Alpha2MQTT together with a self-build ePaper device to report stats in his house in real time!
+
+![Alpha2MQTT](Pics/DSUK1.jpg)
+
+![Alpha2MQTT](Pics/DSUK2.jpg)
+
+
+MK from AU - Very much a minimalist build, but demonstrates that just two cheap components can get a unit up and running!
+
+![Alpha2MQTT](Pics/MK.jpg)

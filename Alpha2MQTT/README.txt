@@ -6,9 +6,11 @@ Communication with Alpha2MQTT is via MQTT and can be driven by home integration 
 
 It's designed to run on an ESP8266 microcontroller with a TTL to RS485 module such as the MAX3485.
 
-Alpha2MQTT honours 1.23 AlphaESS Modbus documentation:
-https://www.alpha-ess.de/images/downloads/handbuecher/AlphaESS-Handbuch_SMILET30_ModBus_RTU_V123-DE.pdf
-It is only available in German however Google offers PDF translation which I have used to good effect for English.
+Alpha2MQTT honours AlphaESS Modbus documentation:
+https://www.alpha-ess.de/images/downloads/handbuecher/AlphaESS-Handbuch_SMILE_ModBus_RTU_TCP_V2.pdf
+https://www.alpha-ess.de/images/downloads/handbuecher/AlphaESS_Register_Parameter_List.pdf
+It is only available in German however Goog
+le offers PDF translation which I have used to good effect for English.
 
 Supported devices are:
 SMILE5, SMILE-B3, SMILE-T10, Storion T30.
