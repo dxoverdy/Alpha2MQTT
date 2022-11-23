@@ -3099,7 +3099,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Integer
 			// 1W/bit
 			// Zero for me
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%u", rs->unsignedIntValue);
 			break;
 		}
 
@@ -3124,7 +3124,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Integer
 			// 1W/bit
 			// Zero for me
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%u", rs->unsignedIntValue);
 			break;
 		}
 
@@ -3149,7 +3149,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Integer
 			// 1W/bit
 			// Zero for me
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%u", rs->unsignedIntValue);
 			break;
 		}
 
@@ -3174,7 +3174,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Integer
 			// 1W/bit
 			// Zero for me
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%u", rs->unsignedIntValue);
 			break;
 		}
 
@@ -3199,7 +3199,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Integer
 			// 1W/bit
 			// Zero for me
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%u", rs->unsignedIntValue);
 			break;
 		}
 
@@ -3224,7 +3224,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Integer
 			// 1W/bit
 			// Zero for me
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%u", rs->unsignedIntValue);
 			break;
 		}
 
@@ -3272,7 +3272,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 		{
 			// Type: Unsigned Integer
 			// 0.1kWh/bit
-			sprintf(rs->dataValueFormatted, "%u", rs->unsignedIntValue);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.1);
 			break;
 		}
 
