@@ -9,8 +9,7 @@ It's designed to run on an ESP8266 microcontroller with a TTL to RS485 module su
 Alpha2MQTT honours AlphaESS Modbus documentation:
 https://www.alpha-ess.de/images/downloads/handbuecher/AlphaESS-Handbuch_SMILE_ModBus_RTU_TCP_V2.pdf
 https://www.alpha-ess.de/images/downloads/handbuecher/AlphaESS_Register_Parameter_List.pdf
-It is only available in German however Goog
-le offers PDF translation which I have used to good effect for English.
+It is only available in German however Google offers PDF translation which I have used to good effect for English.
 
 Supported devices are:
 SMILE5, SMILE-B3, SMILE-T10, Storion T30.

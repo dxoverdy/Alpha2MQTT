@@ -24,7 +24,7 @@ First, go and customise options at the top of Definitions.h!
 #include <Adafruit_SSD1306.h>
 
 // Device parameters
-char _version[6] = "v1.14";
+char _version[6] = "v1.15";
 
 // WiFi parameters
 WiFiClient _wifi;
@@ -1347,44 +1347,73 @@ void mqttCallback(char* topic, byte* message, unsigned int length)
 				pairValueClean[iPairValueCounter] = '\0';
 
 
+#ifdef DEBUG
+				sprintf(_debugOutput, "Got a cleaned JSON parameter of '%s', value '%s'", pairNameClean, pairValueClean);
+				Serial.println(_debugOutput);
+#endif
+
 				if (strcmp(pairNameClean, "registerAddress") == 0)
 				{
-				//	Serial.println("Got registerAddress");
+#ifdef DEBUG
+					sprintf(_debugOutput, "This was handled as registerAddress");
+					Serial.println(_debugOutput);
+#endif
 					strcpy(registerAddress, pairValueClean);
 				}
 				else if (strcmp(pairNameClean, "dataBytes") == 0)
 				{
-				//	Serial.println("Got dataBytes");
+#ifdef DEBUG
+					sprintf(_debugOutput, "This was handled as dataBytes");
+					Serial.println(_debugOutput);
+#endif
 					strcpy(dataBytes, pairValueClean);
 				}
 				else if (strcmp(pairNameClean, "value") == 0)
 				{
-				//	Serial.println("Got value");
+#ifdef DEBUG
+					sprintf(_debugOutput, "This was handled as value");
+					Serial.println(_debugOutput);
+#endif
 					strcpy(value, pairValueClean);
 				}
 				else if (strcmp(pairNameClean, "watts") == 0)
 				{
-				//	Serial.println("Got watts");
+#ifdef DEBUG
+					sprintf(_debugOutput, "This was handled as watts");
+					Serial.println(_debugOutput);
+#endif
 					strcpy(watts, pairValueClean);
 				}
 				else if (strcmp(pairNameClean, "duration") == 0)
 				{
-				//	Serial.println("Got duration");
+#ifdef DEBUG
+					sprintf(_debugOutput, "This was handled as duration");
+					Serial.println(_debugOutput);
+#endif
 					strcpy(duration, pairValueClean);
 				}
 				else if (strcmp(pairNameClean, "socPercent") == 0)
 				{
-				//	Serial.println("Got socPercent");
+#ifdef DEBUG
+					sprintf(_debugOutput, "This was handled as socPercent");
+					Serial.println(_debugOutput);
+#endif
 					strcpy(socPercent, pairValueClean);
 				}
 				else if (strcmp(pairNameClean, "start") == 0)
 				{
-				//	Serial.println("Got start");
+#ifdef DEBUG
+					sprintf(_debugOutput, "This was handled as start");
+					Serial.println(_debugOutput);
+#endif
 					strcpy(startPos, pairValueClean);
 				}
 				else if (strcmp(pairNameClean, "end") == 0)
 				{
-				//	Serial.println("Got end");
+#ifdef DEBUG
+					sprintf(_debugOutput, "This was handled as end");
+					Serial.println(_debugOutput);
+#endif
 					strcpy(endPos, pairValueClean);
 				}
 			}
@@ -1400,6 +1429,10 @@ void mqttCallback(char* topic, byte* message, unsigned int length)
 			// Check if registerAddress found
 			if (!*registerAddress)
 			{
+#ifdef DEBUG
+				sprintf(_debugOutput, "Trying to readHandledRegister without a registerAddress!");
+				Serial.println(_debugOutput);
+#endif
 				result = modbusRequestAndResponseStatusValues::invalidMQTTPayload;
 				strcpy(response.statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_INVALID_MQTT_PAYLOAD_MQTT_DESC);
 			}
@@ -1424,6 +1457,10 @@ void mqttCallback(char* topic, byte* message, unsigned int length)
 		{
 			if (!*registerAddress || !*dataBytes)
 			{
+#ifdef DEBUG
+				sprintf(_debugOutput, "Trying to readRawRegister without a registerAddress or dataBytes!");
+				Serial.println(_debugOutput);
+#endif
 				result = modbusRequestAndResponseStatusValues::invalidMQTTPayload;
 				strcpy(response.statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_INVALID_MQTT_PAYLOAD_MQTT_DESC);
 			}
@@ -1453,6 +1490,10 @@ void mqttCallback(char* topic, byte* message, unsigned int length)
 		{
 			if (!*registerAddress || !*value)
 			{
+#ifdef DEBUG
+				sprintf(_debugOutput, "Trying to writeRawSingleRegister without a registerAddress or value!");
+				Serial.println(_debugOutput);
+#endif
 				result = modbusRequestAndResponseStatusValues::invalidMQTTPayload;
 				strcpy(response.statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_INVALID_MQTT_PAYLOAD_MQTT_DESC);
 			}
@@ -1478,6 +1519,10 @@ void mqttCallback(char* topic, byte* message, unsigned int length)
 		{
 			if (!*registerAddress || !*dataBytes || !*value)
 			{
+#ifdef DEBUG
+				sprintf(_debugOutput, "Trying to writeRawDataRegister without a registerAddress, dataBytes or value!");
+				Serial.println(_debugOutput);
+#endif
 				result = modbusRequestAndResponseStatusValues::invalidMQTTPayload;
 				strcpy(response.statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_INVALID_MQTT_PAYLOAD_MQTT_DESC);
 			}
@@ -1505,6 +1550,10 @@ void mqttCallback(char* topic, byte* message, unsigned int length)
 		{
 			if(!*startPos || !*endPos)
 			{
+#ifdef DEBUG
+				sprintf(_debugOutput, "Trying to readHandledRegisterAll without a start or end!");
+				Serial.println(_debugOutput);
+#endif
 				result = modbusRequestAndResponseStatusValues::invalidMQTTPayload;
 				strcpy(response.statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_INVALID_MQTT_PAYLOAD_MQTT_DESC);
 			}
@@ -1547,16 +1596,30 @@ void mqttCallback(char* topic, byte* message, unsigned int length)
 			// Code is fundamentally the same, just a different charge power.
 			int multiplier = 1;
 
-			if (strcmp(topic, DEVICE_NAME MQTT_SUB_REQUEST_SET_CHARGE) == 0)
+			//if (strcmp(topic, DEVICE_NAME MQTT_SUB_REQUEST_SET_CHARGE) == 0)
+			if (subScription == mqttSubscriptions::setCharge)
 			{
+#ifdef DEBUG
+				sprintf(_debugOutput, "Multiplier for setCharge will be -1");
+				Serial.println(_debugOutput);
+#endif
 				multiplier = -1;
 			}
 			else
 			{
+#ifdef DEBUG
+				sprintf(_debugOutput, "Multiplier for setDischarge will be 1");
+				Serial.println(_debugOutput);
+#endif
 				multiplier = 1;
 			}
+
 			if (!*watts || !*socPercent || !*duration)
 			{
+#ifdef DEBUG
+				sprintf(_debugOutput, "Trying to setCharge or setDischarge without a watts, socPercent or duration!");
+				Serial.println(_debugOutput);
+#endif
 				result = modbusRequestAndResponseStatusValues::invalidMQTTPayload;
 				strcpy(response.statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_INVALID_MQTT_PAYLOAD_MQTT_DESC);
 			}
@@ -1566,11 +1629,19 @@ void mqttCallback(char* topic, byte* message, unsigned int length)
 				batterySocPercentConverted = strtoul(socPercent, NULL, 10);
 				durationSecondsConverted = strtoul(duration, NULL, 10);
 
+#ifdef DEBUG
+				sprintf(_debugOutput, "Base 10 type-cast values for watts, socPercent and duration are %d, %d and %d respectively", chargeDischargeWattsConverted, batterySocPercentConverted, durationSecondsConverted);
+				Serial.println(_debugOutput);
+#endif
 				// Adjust
 				// Charge < 32000, discharge > 32000
 				chargeDischargeWattsConverted = 32000 + (chargeDischargeWattsConverted * multiplier);
 				batterySocPercentConverted = batterySocPercentConverted / DISPATCH_SOC_MULTIPLIER;
 
+#ifdef DEBUG
+				sprintf(_debugOutput, "And adjusted values for watts and socPercent are %d and %d respectively", chargeDischargeWattsConverted, batterySocPercentConverted);
+				Serial.println(_debugOutput);
+#endif
 
 				// First enable dispatch
 				responseDispatch.registerCount = 1;
