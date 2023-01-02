@@ -35,6 +35,8 @@ Alpha2MQTT honours 1.23 AlphaESS Modbus documentation:
 
 [AlphaESS Register List](https://www.alpha-ess.de/images/downloads/handbuecher/AlphaESS_Register_Parameter_List.pdf)
 
+[Alternate AlphaESS Modbus Documentation Link](Pics/AlphaESS-Handbuch_SMILET30_ModBus_RTU_V123-DE.pdf)
+
 It is only available in German however Google offers PDF translation which I have used to good effect for English.
 
 
@@ -626,6 +628,8 @@ Configure Alpha2MQTT by opening up Definitions.h and verifying/customising the f
 ```
 
 ## Software Configuration
+### Drivers
+Download and install the [Wemos CH340 Driver](https://www.wemos.cc/en/latest/ch340_driver.html).
 ### Arduino IDE
 Download and install the [Arduino IDE](https://www.arduino.cc/en/software).
 ### ESP8266 Libraries
