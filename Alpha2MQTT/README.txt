@@ -64,44 +64,6 @@ Each of the schedules can be customised to report a number* / any combination of
 
 *See maximum payload size above.
 
-By default
-Every ten seconds:
-Battery State Of Charge (%)
-Battery Power (+/-) (W)
-Battery Voltage (V)
-Battery Current (A)
-Battery Temp (DegC)
-Grid Power (+/-) (W)
-PV Power (+/-) (W)
-Inverter Power (+/-) (W)
-Inverter Current (Phase A) (A)
-Inverter Temp (DegC)
-Load (W)
-
-Every minute:
-Grid Voltage (Phase A) (V)
-PV Voltage (Phase A) (V)
-
-Every five minutes:
-Dispatch Start (description as per documentation)
-Dispatch Mode (description as per documentation)
-Dispatch Power (W) (32000 Offset, < 32000 charge, > 32000 discharge)
-Dispatch SOC (%)
-Dispatch Time (S)
-
-Every one hour:
-Grid Frequency (Hz)
-PV Frequency (Hz)
-System Fault (description as per documentation)
-Battery Fault (description as per documentation)
-
-Every one day:
-Total Energy Fed To Grid (kWh)
-Total Energy Consumed From Grid (kWh)
-Total PV Energy Generated (kWh)
-Total PV Energy Consumed (kWh)
-
-
 You can customise the schedules by modifying Alpha2MQTT.ino.  Search for 'Schedules' and add or remove registers as you see fit from each schedule.  The list of supported registers begins on line 85 in Definitions.h.  A register name which contains _R_ is read only, one which contains _RW_ is read/write, and one which contains _W_ is write only.
 
 An example response for any subscribed state is a JSON of name/value pairs which are separated by commas, for example:

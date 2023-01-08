@@ -63,26 +63,32 @@ Battery Voltage (V)
 Battery Current (A)
 Battery Temp (DegC)
 Grid Power (+/-) (W)
+Grid Current (+/-) (A)
 PV Power (+/-) (W)
-Inverter Power (+/-) (W)
 Inverter Current (Phase A) (A)
+Inverter Power (W)
 Inverter Temp (DegC)
 Load (W)
+
+Dispatch Start (description as per documentation)
+Dispatch Mode (description as per documentation)
+Dispatch Power (W) (32000 Offset, < 32000 charge, > 32000 discharge)
+Dispatch SOC (%)
+Dispatch Time (S)
 ```
 
 #### Every minute:
 ```
 Grid Voltage (Phase A) (V)
 PV Voltage (Phase A) (V)
+Inverter Voltage (Phase A) (V)
 ```
 
 #### Every five minutes:
 ```
-Dispatch Start (description as per documentation)
-Dispatch Mode (description as per documentation)
-Dispatch Power (W) (32000 Offset, < 32000 charge, > 32000 discharge)
-Dispatch SOC (%)
-Dispatch Time (S)
+Battery Total Charge (kWh)
+Battery Total Discharge (kWh)
+Battery Total Charged From Grid (kWh)
 ```
 
 #### Every one hour:
@@ -95,6 +101,7 @@ Battery Fault (description as per documentation)
 
 #### Every one day:
 ```
+Total System PV Energy Generated (kWh)
 Total Energy Fed To Grid (kWh)
 Total Energy Consumed From Grid (kWh)
 Total PV Energy Generated (kWh)

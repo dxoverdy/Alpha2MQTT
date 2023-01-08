@@ -101,6 +101,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 	int16_t batteryPower;
 	int32_t pvPower;
 	int32_t gridPower;
+	uint16_t gridVoltage;
 
 	// Determine number of registers/data type/mqtt name based on register passed in
 	switch (registerAddress)
@@ -1647,10 +1648,19 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 
 	case REG_CUSTOM_LOAD:
 	{
-		// Custom, going to do the date/time formatting, so swap back to register for YEAR/MONTH and pull 3 bytes.
+		// Custom, derive a load using a combination of registers to substitute lack of load from a data register
 		rs->returnDataType = modbusReturnDataType::signedInt;
 		strcpy(rs->mqttName, "REG_CUSTOM_LOAD");
 		rs->registerCount = 2;
+		break;
+	}
+
+	case REG_CUSTOM_GRID_CURRENT_A_PHASE:
+	{
+		// Custom, derive a grid current using grid power / grid voltage, seeing as REG_GRID_METER_R_CURRENT_OF_A_PHASE is always zero for me
+		rs->returnDataType = modbusReturnDataType::signedShort;
+		strcpy(rs->mqttName, "REG_CUSTOM_GRID_CURRENT_A_PHASE");
+		rs->registerCount = 1;
 		break;
 	}
 
@@ -1724,6 +1734,45 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 							rs->data[2] = rs->signedIntValue >> 8;
 							rs->data[3] = rs->signedIntValue & 0xff;
 						}
+					}
+				}
+			}
+
+		}
+		else if(registerAddress == REG_CUSTOM_GRID_CURRENT_A_PHASE)
+		{
+			strcpy(rs->returnDataTypeDesc, MODBUS_RETURN_DATA_TYPE_SIGNED_SHORT_DESC);
+
+			/*
+			Grid Current (Phase A) is not exposed by my inverter, so I am using a custom routine to pull the two registers relevant and do the calculations on the chip.
+			OK so theory is
+			I = P/V
+			Ensure V > 0 to avoid division by zero
+			*/
+
+			// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
+			uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_GRID_METER_R_ACTIVE_POWER_OF_A_PHASE_1 >> 8, REG_GRID_METER_R_ACTIVE_POWER_OF_A_PHASE_1 & 0xff, 0, 2, 0, 0 };
+			// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
+			result = _modBus->sendModbus(frame, sizeof(frame), rs);
+			if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+			{
+
+				gridPower = (int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]);
+				if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+				{
+					// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
+					uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_GRID_METER_R_VOLTAGE_OF_A_PHASE >> 8, REG_GRID_METER_R_VOLTAGE_OF_A_PHASE & 0xff, 0, 1, 0, 0 };
+					// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
+					result = _modBus->sendModbus(frame, sizeof(frame), rs);
+					if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+					{
+						gridVoltage = ((uint16_t)(rs->data[0] << 8 | rs->data[1])) * 0.1;
+
+						rs->signedShortValue = (gridVoltage == 0 ? 0 : gridPower / gridVoltage);
+
+						rs->dataSize = 2;
+						rs->data[0] = rs->signedShortValue >> 8;
+						rs->data[1] = rs->signedShortValue & 0xff;
 					}
 				}
 			}
@@ -1819,7 +1868,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 		{
 			// Type: Unsigned Integer
 			// 0.01kWh/bit
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.01);
 			break;
 		}
 
@@ -1827,7 +1876,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 		{
 			// Type: Unsigned Integer
 			// 0.01kWh/bit
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.01);
 			break;
 		}
 
@@ -2047,7 +2096,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Integer
 			// 0.01kWh/bit
 			// Always returns zero for me
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.01);
 			break;
 		}
 
@@ -2056,7 +2105,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Integer
 			// 0.01kWh/bit
 			// This is total PV generation
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.01);
 			break;
 		}
 
@@ -4231,6 +4280,15 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 
 			// Clear the characterValue as we are customising this one
 			rs->characterValue[0] = 0;
+			break;
+		}
+
+		case REG_CUSTOM_GRID_CURRENT_A_PHASE:
+		{
+			// Type: Signed Short
+			// 0.1A
+			// Current amps of Phase A
+			sprintf(rs->dataValueFormatted, "%d", rs->signedShortValue);
 			break;
 		}
 		}

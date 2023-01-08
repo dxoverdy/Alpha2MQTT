@@ -36,7 +36,7 @@ Customise these options as per README.txt.  Please read README.txt before contin
 #define MQTT_SERVER	"192.168.1.135"
 #define MQTT_PORT	1883
 #define MQTT_USERNAME	"Alpha"			// Empty string for none.
-#define MQTT_PASSWORD	""
+#define MQTT_PASSWORD	"Inverter1"
 
 // The device name is used as the MQTT base topic and presence on the network.
 // If you need more than one Alpha2MQTT on your network, give them unique names.
@@ -438,6 +438,8 @@ Customise these options as per README.txt.  Please read README.txt before contin
 // Custom in Alpha2ESS
 #define REG_CUSTOM_LOAD																0xFFFE	// // 1W/bit							// 4 Bytes		// Integer
 #define REG_CUSTOM_SYSTEM_DATE_TIME													0xFFFF	// dd/MMM/yyyy HH:mm:ss					// N/A			// Unsigned Char
+#define REG_CUSTOM_GRID_CURRENT_A_PHASE												0xFFFD	// 0.1A									// 2 Bytes		// Short
+
 // End of Handled Registered
 
 

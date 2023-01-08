@@ -1,0 +1,25 @@
+Register Changes:
+- REG_PV_METER_R_TOTAL_ENERGY_CONSUMED_FROM_GRID_1 should have been multiplied by 0.01
+- REG_PV_METER_R_TOTAL_ENERGY_FEED_TO_GRID_1 should have been multiplied by 0.01
+- REG_GRID_METER_R_TOTAL_ENERGY_FEED_TO_GRID_1 should have been multiplied by 0.01
+- REG_GRID_METER_R_TOTAL_ENERGY_CONSUMED_FROM_GRID_1 should have been multiplied by 0.01
+- REG_CUSTOM_GRID_CURRENT_A_PHASE is a new register to derive current from Grid Power / Grid Voltage (Phase A)
+
+State Changes:
+REG_DISPATCH_RW_DISPATCH_START moved to ten second state
+REG_DISPATCH_RW_DISPATCH_MODE moved to ten second state
+REG_DISPATCH_RW_ACTIVE_POWER_1 moved to ten second state
+REG_DISPATCH_RW_DISPATCH_SOC moved to ten second state
+REG_DISPATCH_RW_DISPATCH_TIME_1 moved to ten second state
+REG_INVERTER_HOME_R_POWER_TOTAL_1 removed from ten second state
+REG_INVERTER_HOME_R_POWER_L1_1 added to ten second state
+REG_INVERTER_HOME_R_VOLTAGE_L1 added to one minute state
+REG_BATTERY_HOME_R_BATTERY_CHARGE_ENERGY_1 added to five minute state
+REG_BATTERY_HOME_R_BATTERY_DISCHARGE_ENERGY_1 added to five minute state
+REG_BATTERY_HOME_R_BATTERY_ENERGY_CHARGE_FROM_GRID_1 added to five minute state
+
+REG_SYSTEM_OP_R_SYSTEM_TOTAL_PV_ENERGY_1 added to one day state
+
+
+Node Red Flow Changes
+Updated Node Red flows to accommodate state changes above
