@@ -1,6 +1,8 @@
 # Alpha2MQTT (A2M)
 ## A smart home interface for AlphaESS solar and battery inverters.
 
+NEW! For a complete accompanying guide to integrating your Alpha2MQTT with Home Assistant on a Raspberry Pi or Virtual Machine, check [here](https://github.com/dxoverdy/Integrating-Alpha2MQTT-with-Home-Assistant).
+
 ### Supported devices are:
 SMILE5,
 

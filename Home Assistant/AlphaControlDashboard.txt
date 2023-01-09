@@ -1,0 +1,83 @@
+views:
+  - theme: Backend-selected
+    title: Control
+    badges: []
+    cards:
+      - type: entities
+        entities:
+          - entity: sensor.alpha_dispatch_start
+            name: Dispatch State
+          - entity: sensor.alpha_dispatch_mode
+            name: Dispatch Mode
+          - entity: sensor.alpha_dispatch_soc
+            name: Dispatch Target SOC
+          - entity: sensor.alpha_dispatch_time
+            name: Dispatch Time
+          - entity: sensor.alpha_dispatch_power
+            name: Dispatch Power
+            secondary_info: none
+          - entity: sensor.alpha_battery_power_absolute
+            name: Battery Power
+            card_mod:
+              style: >
+                ha-card {
+
+                color:      {% if states('sensor.alpha_battery_power')|int > 0
+                %}
+                                  red
+                            {% elif states('sensor.alpha_battery_power')|int < 0 %}
+                                 green
+                                {% else %}
+                                  black
+                                {% endif %}
+                }
+          - entity: sensor.alpha_grid_power_absolute
+            name: Grid Power
+          - entity: sensor.alpha_load
+            name: House Requirements
+        title: Information
+      - type: entities
+        entities:
+          - entity: button.alpha_set_normal
+            name: Set Normal Mode
+          - entity: sensor.alpha_dispatch_normal_response_status
+            name: Response Status
+            secondary_info: last-updated
+          - entity: sensor.alpha_dispatch_normal_failure_detail
+            name: Failure Detail
+            secondary_info: last-updated
+        title: Normal Mode
+      - type: entities
+        entities:
+          - entity: input_number.input_dispatch_charge_watts
+            name: Charge At
+          - entity: input_number.input_dispatch_charge_soc
+            name: Target Charge SOC
+          - entity: input_number.input_dispatch_charge_time
+            name: Charge For
+          - entity: button.alpha_set_charge
+          - entity: sensor.alpha_dispatch_charge_response_status
+            name: Response Status
+            secondary_info: last-updated
+          - entity: sensor.alpha_dispatch_charge_failure_detail
+            name: Failure Detail
+            secondary_info: last-updated
+        title: Charge Mode
+      - type: entities
+        entities:
+          - entity: input_number.input_dispatch_discharge_watts
+            name: Discharge At
+          - entity: input_number.input_dispatch_discharge_soc
+            name: Target Discharge SOC
+          - entity: input_number.input_dispatch_discharge_time
+            name: Discharge For
+          - entity: button.alpha_set_discharge
+            name: Set Discharge Mode
+          - entity: sensor.alpha_dispatch_discharge_response_status
+            name: Response Status
+            secondary_info: last-updated
+          - entity: sensor.alpha_dispatch_discharge_failure_detail
+            name: Failure Detail
+            secondary_info: last-updated
+        title: Discharge Mode
+title: Alpha Control

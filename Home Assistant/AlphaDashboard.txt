@@ -1,0 +1,1701 @@
+title: ALPHA
+views:
+  - theme: Backend-selected
+    path: default_view
+    title: Live
+    icon: ''
+    badges: []
+    cards:
+      - square: false
+        columns: 1
+        title: House Requirements
+        type: grid
+        cards:
+          - type: entity
+            entity: sensor.alpha_load
+            name: Load
+      - square: false
+        columns: 2
+        type: grid
+        title: Battery
+        cards:
+          - type: entity
+            entity: sensor.alpha_battery_power_absolute
+            name: Power
+            card_mod:
+              style: >
+                ha-card {
+
+                color:      {% if states('sensor.alpha_battery_power')|int > 0
+                %}
+                                  red
+                            {% elif states('sensor.alpha_battery_power')|int < 0 %}
+                                 green
+                                {% else %}
+                                  black
+                                {% endif %}
+                }
+          - type: entity
+            entity: sensor.alpha_battery_status
+            name: Status
+          - type: entity
+            entity: sensor.alpha_battery_temperature
+            name: Temp
+          - type: gauge
+            entity: sensor.alpha_battery_soc
+            name: ' '
+      - square: false
+        columns: 2
+        type: grid
+        title: Grid
+        cards:
+          - type: entity
+            entity: sensor.alpha_grid_power_absolute
+            name: Power
+            card_mod:
+              style: |
+                ha-card {
+                color:      {% if states('sensor.alpha_grid_power')|int < 0 %}
+                                  red
+                            {% elif states('sensor.alpha_grid_power')|int > 0 %}
+                                 green
+                                {% else %}
+                                  black
+                                {% endif %}
+                }
+          - type: entity
+            entity: sensor.alpha_grid_status
+            name: Status
+      - square: false
+        columns: 1
+        title: Solar
+        type: grid
+        cards:
+          - type: gauge
+            entity: sensor.alpha_solar_power
+            max: 5500
+            needle: false
+            name: ' '
+      - square: false
+        title: Inverter
+        columns: 2
+        type: grid
+        cards:
+          - type: entity
+            entity: sensor.alpha_inverter_power
+            name: Power
+          - type: entity
+            entity: sensor.alpha_inverter_temperature
+            name: Inverter Temp
+  - theme: Backend-selected
+    title: Today
+    path: today
+    badges: []
+    cards:
+      - square: false
+        columns: 1
+        type: grid
+        title: Generation and Usage
+        cards:
+          - type: entity
+            entity: sensor.alpha_utility_meter_daily_total_solar_power
+            name: Solar
+          - type: entity
+            entity: sensor.alpha_utility_meter_daily_total_load
+            name: House
+          - type: entity
+            entity: sensor.alpha_utility_meter_daily_total_grid_import
+            name: Grid Consumption
+            style: |
+              ha-card {
+                color: red;
+              }
+          - type: entity
+            entity: sensor.alpha_utility_meter_daily_total_grid_export
+            name: Feed-In
+            style: |
+              ha-card {
+                color: green;
+              }
+          - type: entity
+            entity: sensor.alpha_utility_meter_daily_total_battery_charge
+            name: Charge
+          - type: entity
+            entity: sensor.alpha_utility_meter_daily_total_battery_discharge
+            name: Discharge
+  - theme: Backend-selected
+    title: Other Live Stats
+    path: voltage-and-amps
+    badges: []
+    cards:
+      - square: false
+        columns: 2
+        type: grid
+        title: Solar
+        cards:
+          - type: entity
+            entity: sensor.alpha_solar_voltage
+            name: Voltage
+          - type: entity
+            entity: sensor.alpha_solar_frequency
+            name: Frequency
+      - square: false
+        columns: 3
+        type: grid
+        title: Inverter
+        cards:
+          - type: entity
+            entity: sensor.alpha_inverter_current
+            name: Current
+          - type: entity
+            entity: sensor.alpha_inverter_temperature
+            name: Temperature
+          - type: entity
+            entity: sensor.alpha_system_fault
+            name: Fault
+          - type: entity
+            entity: sensor.alpha_inverter_voltage
+            name: Voltage
+      - square: false
+        columns: 3
+        type: grid
+        title: Battery
+        cards:
+          - type: entity
+            entity: sensor.alpha_battery_voltage
+            name: Voltage
+          - type: entity
+            entity: sensor.alpha_battery_current
+            name: Current
+          - type: entity
+            entity: sensor.alpha_battery_fault
+            name: Fault
+      - square: false
+        columns: 3
+        type: grid
+        title: Dispatch Mode
+        cards:
+          - type: entity
+            entity: sensor.alpha_dispatch_start
+            name: State
+          - type: entity
+            entity: sensor.alpha_dispatch_mode
+            name: Mode
+          - type: entity
+            entity: sensor.alpha_dispatch_power
+            name: Power
+          - type: entity
+            entity: sensor.alpha_dispatch_soc
+            name: Target SOC
+          - type: entity
+            entity: sensor.alpha_dispatch_time
+            name: Time
+      - square: false
+        columns: 3
+        type: grid
+        title: Grid
+        cards:
+          - type: entity
+            entity: sensor.alpha_grid_voltage
+            name: Voltage
+          - type: entity
+            entity: sensor.alpha_grid_current
+            name: Current
+          - type: entity
+            entity: sensor.alpha_grid_frequency
+            name: Frequency
+  - theme: Backend-selected
+    title: TODAY'S POWER DIAGRAM
+    path: todays-power-diagram
+    type: panel
+    badges: []
+    cards:
+      - type: custom:apexcharts-card
+        apex_config:
+          yaxis:
+            forceNiceScale: true
+          chart:
+            height: 600px
+          stroke:
+            width: 1.5
+            curve: smooth
+        graph_span: 24h
+        all_series_config:
+          stroke_width: 1.5
+          opacity: 0.4
+          type: area
+          curve: smooth
+        now:
+          show: true
+          color: red
+        span:
+          start: day
+        header:
+          show: false
+          title: Battery
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.alpha_battery_soc
+            name: BAT
+            transform: return x;
+            yaxis_id: battery
+            type: area
+            color: '#A0C770'
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_load
+            float_precision: 2
+            name: Load
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#6FB6C6'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_solar_power
+            float_precision: 2
+            name: PV
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#FABF00'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.5
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_exporting
+            float_precision: 2
+            name: Feed-In
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#DF681F'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_importing
+            float_precision: 2
+            name: Grid Consumption
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#C18349'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+        yaxis:
+          - id: power
+            min: 0
+            decimals: 2
+            apex_config:
+              forceNiceScale: true
+              title:
+                text: POWER
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(2).toString() + " kW";
+                  }
+          - id: battery
+            min: 0
+            max: 100
+            decimals: 0
+            opposite: true
+            apex_config:
+              tickAmount: 5
+              title:
+                text: BAT
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(0).toString() + " %";
+                  }
+  - theme: Backend-selected
+    title: Last 10 Days
+    path: previous-month
+    type: custom:grid-layout
+    badges: []
+    cards:
+      - type: custom:apexcharts-card
+        update_interval: 5min
+        apex_config:
+          yaxis:
+            forceNiceScale: true
+          chart:
+            height: 600px
+          stroke:
+            width: 2
+        graph_span: 11d
+        all_series_config:
+          stroke_width: 2
+          opacity: 0.8
+          type: line
+        span:
+          start: day
+          offset: '-10d'
+        header:
+          show: false
+          title: Month To Date
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.alpha_utility_meter_daily_total_solar_power
+            float_precision: 2
+            name: PV
+            yaxis_id: power
+            type: column
+            color: '#FABF00'
+            unit: kWh
+            fill_raw: last
+            opacity: 0.4
+            group_by:
+              func: max
+              duration: 1d
+            show:
+              legend_value: false
+          - entity: sensor.alpha_utility_meter_daily_total_load
+            float_precision: 2
+            name: Load
+            yaxis_id: power
+            type: column
+            color: '#6FB6C6'
+            unit: kWh
+            fill_raw: last
+            opacity: 0.4
+            group_by:
+              func: max
+              duration: 1d
+            show:
+              legend_value: false
+          - entity: sensor.alpha_utility_meter_daily_total_grid_export
+            float_precision: 2
+            name: Feed-In
+            yaxis_id: power
+            type: column
+            color: '#DF681F'
+            unit: kWh
+            fill_raw: last
+            opacity: 0.4
+            group_by:
+              func: max
+              duration: 1d
+            show:
+              legend_value: false
+          - entity: sensor.alpha_utility_meter_daily_total_grid_import
+            float_precision: 2
+            name: Grid Consumption
+            yaxis_id: power
+            type: column
+            color: '#C18349'
+            unit: kWh
+            fill_raw: last
+            opacity: 0.4
+            group_by:
+              func: max
+              duration: 1d
+            show:
+              legend_value: false
+          - entity: sensor.alpha_utility_meter_daily_total_battery_charge
+            float_precision: 2
+            name: Charge
+            yaxis_id: power
+            type: column
+            color: '#ABCE7A'
+            unit: kWh
+            fill_raw: last
+            opacity: 0.4
+            group_by:
+              func: last
+              duration: 1d
+            show:
+              legend_value: false
+          - entity: sensor.alpha_utility_meter_daily_total_battery_discharge
+            float_precision: 2
+            name: Discharge
+            yaxis_id: power
+            type: column
+            color: '#549585'
+            unit: kWh
+            fill_raw: last
+            opacity: 0.4
+            group_by:
+              func: max
+              duration: 1d
+            show:
+              legend_value: false
+        yaxis:
+          - id: power
+            min: 0
+            decimals: 2
+            apex_config:
+              forceNiceScale: true
+              title:
+                text: POWER
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(2).toString() + " kWh";
+                  }
+  - theme: Backend-selected
+    type: panel
+    title: PD -1
+    path: sdf
+    icon: ''
+    badges: []
+    cards:
+      - type: custom:apexcharts-card
+        apex_config:
+          yaxis:
+            forceNiceScale: true
+          chart:
+            height: 600px
+          stroke:
+            width: 1.5
+            curve: smooth
+        graph_span: 24h
+        all_series_config:
+          stroke_width: 1.5
+          opacity: 0.4
+          type: area
+          curve: smooth
+        now:
+          show: true
+          color: red
+        span:
+          start: day
+          offset: '-1day'
+        header:
+          show: false
+          title: Battery
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.alpha_battery_soc
+            name: BAT
+            transform: return x;
+            yaxis_id: battery
+            type: area
+            color: '#A0C770'
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_load
+            float_precision: 2
+            name: Load
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#6FB6C6'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_solar_power
+            float_precision: 2
+            name: PV
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#FABF00'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.5
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_exporting
+            float_precision: 2
+            name: Feed-In
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#DF681F'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_importing
+            float_precision: 2
+            name: Grid Consumption
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#C18349'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+        yaxis:
+          - id: power
+            min: 0
+            decimals: 2
+            apex_config:
+              forceNiceScale: true
+              title:
+                text: POWER
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(2).toString() + " kW";
+                  }
+          - id: battery
+            min: 0
+            max: 100
+            decimals: 0
+            opposite: true
+            apex_config:
+              tickAmount: 5
+              title:
+                text: BAT
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(0).toString() + " %";
+                  }
+  - theme: Backend-selected
+    title: PD-2
+    path: pd-2
+    type: panel
+    badges: []
+    cards:
+      - type: custom:apexcharts-card
+        apex_config:
+          yaxis:
+            forceNiceScale: true
+          chart:
+            height: 600px
+          stroke:
+            width: 1.5
+            curve: smooth
+        graph_span: 24h
+        all_series_config:
+          stroke_width: 1.5
+          opacity: 0.4
+          type: area
+          curve: smooth
+        now:
+          show: true
+          color: red
+        span:
+          start: day
+          offset: '-2day'
+        header:
+          show: false
+          title: Battery
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.alpha_battery_soc
+            name: BAT
+            transform: return x;
+            yaxis_id: battery
+            type: area
+            color: '#A0C770'
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_load
+            float_precision: 2
+            name: Load
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#6FB6C6'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_solar_power
+            float_precision: 2
+            name: PV
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#FABF00'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.5
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_exporting
+            float_precision: 2
+            name: Feed-In
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#DF681F'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_importing
+            float_precision: 2
+            name: Grid Consumption
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#C18349'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+        yaxis:
+          - id: power
+            min: 0
+            decimals: 2
+            apex_config:
+              forceNiceScale: true
+              title:
+                text: POWER
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(2).toString() + " kW";
+                  }
+          - id: battery
+            min: 0
+            max: 100
+            decimals: 0
+            opposite: true
+            apex_config:
+              tickAmount: 5
+              title:
+                text: BAT
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(0).toString() + " %";
+                  }
+  - theme: Backend-selected
+    title: PD -3
+    path: pd-3
+    type: panel
+    badges: []
+    cards:
+      - type: custom:apexcharts-card
+        apex_config:
+          yaxis:
+            forceNiceScale: true
+          chart:
+            height: 600px
+          stroke:
+            width: 1.5
+            curve: smooth
+        graph_span: 24h
+        all_series_config:
+          stroke_width: 1.5
+          opacity: 0.4
+          type: area
+          curve: smooth
+        now:
+          show: true
+          color: red
+        span:
+          start: day
+          offset: '-3day'
+        header:
+          show: false
+          title: Battery
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.alpha_battery_soc
+            name: BAT
+            transform: return x;
+            yaxis_id: battery
+            type: area
+            color: '#A0C770'
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_load
+            float_precision: 2
+            name: Load
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#6FB6C6'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_solar_power
+            float_precision: 2
+            name: PV
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#FABF00'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.5
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_exporting
+            float_precision: 2
+            name: Feed-In
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#DF681F'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_importing
+            float_precision: 2
+            name: Grid Consumption
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#C18349'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+        yaxis:
+          - id: power
+            min: 0
+            decimals: 2
+            apex_config:
+              forceNiceScale: true
+              title:
+                text: POWER
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(2).toString() + " kW";
+                  }
+          - id: battery
+            min: 0
+            max: 100
+            decimals: 0
+            opposite: true
+            apex_config:
+              tickAmount: 5
+              title:
+                text: BAT
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(0).toString() + " %";
+                  }
+  - theme: Backend-selected
+    title: PD -4
+    path: pd-4
+    type: panel
+    badges: []
+    cards:
+      - type: custom:apexcharts-card
+        apex_config:
+          yaxis:
+            forceNiceScale: true
+          chart:
+            height: 600px
+          stroke:
+            width: 1.5
+            curve: smooth
+        graph_span: 24h
+        all_series_config:
+          stroke_width: 1.5
+          opacity: 0.4
+          type: area
+          curve: smooth
+        now:
+          show: true
+          color: red
+        span:
+          start: day
+          offset: '-4day'
+        header:
+          show: false
+          title: Battery
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.alpha_battery_soc
+            name: BAT
+            transform: return x;
+            yaxis_id: battery
+            type: area
+            color: '#A0C770'
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_load
+            float_precision: 2
+            name: Load
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#6FB6C6'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_solar_power
+            float_precision: 2
+            name: PV
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#FABF00'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.5
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_exporting
+            float_precision: 2
+            name: Feed-In
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#DF681F'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_importing
+            float_precision: 2
+            name: Grid Consumption
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#C18349'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+        yaxis:
+          - id: power
+            min: 0
+            decimals: 2
+            apex_config:
+              forceNiceScale: true
+              title:
+                text: POWER
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(2).toString() + " kW";
+                  }
+          - id: battery
+            min: 0
+            max: 100
+            decimals: 0
+            opposite: true
+            apex_config:
+              tickAmount: 5
+              title:
+                text: BAT
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(0).toString() + " %";
+                  }
+  - theme: Backend-selected
+    type: panel
+    title: PD -5
+    path: pd-5
+    badges: []
+    cards:
+      - type: custom:apexcharts-card
+        apex_config:
+          yaxis:
+            forceNiceScale: true
+          chart:
+            height: 600px
+          stroke:
+            width: 1.5
+            curve: smooth
+        graph_span: 24h
+        all_series_config:
+          stroke_width: 1.5
+          opacity: 0.4
+          type: area
+          curve: smooth
+        now:
+          show: true
+          color: red
+        span:
+          start: day
+          offset: '-5day'
+        header:
+          show: false
+          title: Battery
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.alpha_battery_soc
+            name: BAT
+            transform: return x;
+            yaxis_id: battery
+            type: area
+            color: '#A0C770'
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_load
+            float_precision: 2
+            name: Load
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#6FB6C6'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_solar_power
+            float_precision: 2
+            name: PV
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#FABF00'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.5
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_exporting
+            float_precision: 2
+            name: Feed-In
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#DF681F'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_importing
+            float_precision: 2
+            name: Grid Consumption
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#C18349'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+        yaxis:
+          - id: power
+            min: 0
+            decimals: 2
+            apex_config:
+              forceNiceScale: true
+              title:
+                text: POWER
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(2).toString() + " kW";
+                  }
+          - id: battery
+            min: 0
+            max: 100
+            decimals: 0
+            opposite: true
+            apex_config:
+              tickAmount: 5
+              title:
+                text: BAT
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(0).toString() + " %";
+                  }
+  - theme: Backend-selected
+    title: PD -6
+    path: pd-6
+    type: panel
+    badges: []
+    cards:
+      - type: custom:apexcharts-card
+        apex_config:
+          yaxis:
+            forceNiceScale: true
+          chart:
+            height: 600px
+          stroke:
+            width: 1.5
+            curve: smooth
+        graph_span: 24h
+        all_series_config:
+          stroke_width: 1.5
+          opacity: 0.4
+          type: area
+          curve: smooth
+        now:
+          show: true
+          color: red
+        span:
+          start: day
+          offset: '-6day'
+        header:
+          show: false
+          title: Battery
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.alpha_battery_soc
+            name: BAT
+            transform: return x;
+            yaxis_id: battery
+            type: area
+            color: '#A0C770'
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_load
+            float_precision: 2
+            name: Load
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#6FB6C6'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_solar_power
+            float_precision: 2
+            name: PV
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#FABF00'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.5
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_exporting
+            float_precision: 2
+            name: Feed-In
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#DF681F'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_importing
+            float_precision: 2
+            name: Grid Consumption
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#C18349'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+        yaxis:
+          - id: power
+            min: 0
+            decimals: 2
+            apex_config:
+              forceNiceScale: true
+              title:
+                text: POWER
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(2).toString() + " kW";
+                  }
+          - id: battery
+            min: 0
+            max: 100
+            decimals: 0
+            opposite: true
+            apex_config:
+              tickAmount: 5
+              title:
+                text: BAT
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(0).toString() + " %";
+                  }
+  - theme: Backend-selected
+    title: One Page
+    path: x
+    layout: {}
+    type: custom:grid-layout
+    badges: []
+    cards:
+      - square: false
+        columns: 2
+        type: grid
+        cards:
+          - type: custom:power-flow-card
+            title: Currently...
+            kw_decimals: 2
+            w_decimals: 2
+            entities:
+              battery: sensor.alpha_battery_power
+              battery_charge: sensor.alpha_battery_soc
+              grid: sensor.alpha_grid_power
+              solar: sensor.alpha_solar_power
+          - type: custom:sankey-chart
+            show_names: true
+            unit_prefix: k
+            round: 2
+            wide: true
+            height: 333
+            title: Today...
+            sections:
+              - entities:
+                  - entity_id: sensor.alpha_utility_meter_daily_total_solar_power
+                    name: PV
+                    color: '#FABF00'
+                    children:
+                      - sensor.alpha_utility_meter_daily_total_grid_export
+                      - sensor.alpha_utility_meter_daily_total_load
+                      - sensor.alpha_utility_meter_daily_total_battery_charge
+                  - entity_id: sensor.alpha_utility_meter_daily_total_grid_import
+                    color: '#C18349'
+                    name: Grid
+                    children:
+                      - sensor.alpha_utility_meter_daily_total_load
+                  - entity_id: sensor.alpha_utility_meter_daily_total_battery_discharge
+                    name: Discharge
+                    color: var(--success-color)
+                    children:
+                      - sensor.alpha_utility_meter_daily_total_load
+              - entities:
+                  - entity_id: sensor.alpha_utility_meter_daily_total_grid_export
+                    name: Feed-In
+                    color: '#DF681F'
+                  - entity_id: sensor.alpha_utility_meter_daily_total_battery_charge
+                    name: Charge
+                    color: '#F06292'
+                  - entity_id: sensor.alpha_utility_meter_daily_total_load
+                    name: Load
+                    color: '#6FB6C6'
+                    remaining:
+                      name: House
+      - square: false
+        columns: 5
+        type: grid
+        title: Currently...
+        cards:
+          - type: entity
+            entity: sensor.alpha_solar_power
+            name: Solar
+            card_mod:
+              style: |
+                ha-card { color: #FABF00 }
+          - type: entity
+            entity: sensor.alpha_load
+            name: Consumption
+            card_mod:
+              style: |
+                ha-card { color: #6FB6C6 }
+          - type: entity
+            entity: sensor.alpha_battery_power_absolute
+            name: BAT Power
+            card_mod:
+              style: >
+                ha-card { color:      {% if
+                states('sensor.alpha_battery_power')|int > 0 %}
+                                  red
+                            {% elif states('sensor.alpha_battery_power')|int < 0 %}
+                                 green
+                                {% else %}
+                                  black
+                                {% endif %}
+                }
+          - type: entity
+            entity: sensor.alpha_grid_power_exporting
+            name: Feed-In
+            card_mod:
+              style: |
+                ha-card { color: #DF681F }
+          - type: entity
+            entity: sensor.alpha_grid_power_importing
+            name: Grid Usage
+            card_mod:
+              style: |
+                ha-card { color: #C18349 }
+      - square: false
+        columns: 5
+        type: grid
+        title: Today...
+        cards:
+          - type: entity
+            entity: sensor.alpha_utility_meter_daily_total_solar_power
+            name: Solar
+            card_mod:
+              style: |
+                ha-card { color: #FABF00 }
+          - type: entity
+            entity: sensor.alpha_utility_meter_daily_total_load
+            name: Consumption
+            card_mod:
+              style: |
+                ha-card { color: #6FB6C6 }
+          - type: entity
+            entity: sensor.alpha_battery_soc
+            name: BAT SOC
+            card_mod:
+              style: |
+                ha-card { color: #A0C770 }
+          - type: entity
+            entity: sensor.alpha_utility_meter_daily_total_grid_export
+            name: Feed-In
+            card_mod:
+              style: |
+                ha-card { color: #DF681F }
+          - type: entity
+            entity: sensor.alpha_utility_meter_daily_total_grid_import
+            name: Grid Usage
+            card_mod:
+              style: |
+                ha-card { color: #C18349 }
+      - type: custom:apexcharts-card
+        apex_config:
+          yaxis:
+            forceNiceScale: true
+          chart:
+            height: 600px
+          stroke:
+            width: 1.5
+            curve: smooth
+        graph_span: 24h
+        all_series_config:
+          stroke_width: 1.5
+          opacity: 0.4
+          type: area
+          curve: smooth
+        now:
+          show: true
+          color: red
+        span:
+          start: day
+        header:
+          show: false
+          title: Battery
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.alpha_battery_soc
+            name: BAT
+            transform: return x;
+            yaxis_id: battery
+            type: area
+            color: '#A0C770'
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_load
+            float_precision: 2
+            name: Load
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#6FB6C6'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_solar_power
+            float_precision: 2
+            name: PV
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#FABF00'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.5
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_exporting
+            float_precision: 2
+            name: Feed-In
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#DF681F'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+          - entity: sensor.alpha_grid_power_importing
+            float_precision: 2
+            name: Grid Consumption
+            transform: return x / 1000;
+            yaxis_id: power
+            type: area
+            color: '#C18349'
+            unit: kW
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 5min
+            show:
+              legend_value: false
+        yaxis:
+          - id: power
+            min: 0
+            decimals: 2
+            apex_config:
+              forceNiceScale: true
+              title:
+                text: POWER
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(2).toString() + " kW";
+                  }
+          - id: battery
+            min: 0
+            max: 100
+            decimals: 0
+            opposite: true
+            apex_config:
+              tickAmount: 5
+              title:
+                text: BAT
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(0).toString() + " %";
+                  }
+  - theme: Backend-selected
+    title: TODAY'S GRID VOLTAGE
+    path: todays-voltage
+    icon: ''
+    type: panel
+    badges: []
+    cards:
+      - type: custom:apexcharts-card
+        apex_config:
+          yaxis:
+            forceNiceScale: false
+          chart:
+            height: 600px
+          stroke:
+            width: 1.5
+            curve: smooth
+        graph_span: 24h
+        all_series_config:
+          stroke_width: 1.5
+          opacity: 0.4
+          type: area
+          curve: smooth
+        now:
+          show: true
+          color: red
+        span:
+          start: day
+        header:
+          show: false
+          title: Voltage
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.alpha_grid_voltage
+            float_precision: 2
+            name: House Voltage
+            transform: return x;
+            yaxis_id: voltage
+            type: line
+            color: blue
+            unit: V
+            extend_to: now
+            curve: smooth
+            fill_raw: last
+            opacity: 0.6
+            group_by:
+              func: last
+              duration: 5min
+            show:
+              legend_value: false
+        yaxis:
+          - id: voltage
+            min: 210
+            max: 270
+            decimals: 2
+            apex_config:
+              forceNiceScale: false
+              title:
+                text: VOLTS
+              labels:
+                formatter: |
+                  EVAL:function(value) {
+                    return value.toFixed(2).toString() + " V";
+                  }
+  - theme: Backend-selected
+    title: Lifetime Totals
+    path: lifetime-totals
+    badges: []
+    cards:
+      - type: entities
+        entities:
+          - entity: sensor.alpha_battery_total_charge_energy
+          - entity: sensor.alpha_battery_total_charge_energy_from_grid
+          - entity: sensor.alpha_battery_total_discharge_energy
+        title: Battery Totals
+      - type: entities
+        entities:
+          - entity: sensor.alpha_system_total_solar_energy
+          - entity: sensor.alpha_system_total_energy_imported_from_grid
+          - entity: sensor.alpha_system_total_energy_exported_to_grid
+        title: System Totals
+  - theme: Backend-selected
+    title: TEST
+    path: test
+    type: custom:vertical-layout
+    layout:
+      width: 1000
+    badges: []
+    cards:
+      - type: glance
+        entities:
+          - entity: sensor.alpha_utility_meter_daily_total_solar_power
+          - entity: sensor.alpha_utility_meter_daily_total_load
+          - entity: sensor.alpha_battery_soc
+          - entity: sensor.alpha_utility_meter_daily_total_grid_export
+          - entity: sensor.alpha_utility_meter_daily_total_grid_import

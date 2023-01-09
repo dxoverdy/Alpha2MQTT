@@ -1,0 +1,953 @@
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+    
+# Text to speech
+tts:
+  - platform: google_translate
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+
+
+
+#MQTT
+mqtt:
+  button:
+# Inverter Buttons
+    - unique_id: alpha_set_normal
+      command_topic: "Alpha2MQTT/request/set/normal"
+      name: "Alpha Set Normal"
+      command_template: "{\"void\": 0}"
+      payload_press: "true"
+      qos: 0
+      retain: false
+      entity_category: "config"
+      icon: "mdi:lightbulb-auto"
+
+
+    - unique_id: alpha_set_charge
+      command_topic: "Alpha2MQTT/request/set/charge"
+      name: "Alpha Set Charge"
+      command_template: "{\"watts\": {{ states('input_number.input_dispatch_charge_watts')|int }},\"socPercent\": {{ states('input_number.input_dispatch_charge_soc')|int }},\"duration\": {{ states('input_number.input_dispatch_charge_time')|int }} }"
+      qos: 0
+      retain: false
+      entity_category: "config"
+      icon: "mdi:battery-positive"
+
+    - unique_id: alpha_set_discharge
+      command_topic: "Alpha2MQTT/request/set/discharge"
+      name: "Alpha Set Discharge"
+      command_template: "{\"watts\": {{ states('input_number.input_dispatch_discharge_watts')|int }},\"socPercent\": {{ states('input_number.input_dispatch_discharge_soc')|int }},\"duration\": {{ states('input_number.input_dispatch_discharge_time')|int }} }"
+      qos: 0
+      retain: false
+      entity_category: "config"
+      icon: "mdi:battery-negative"
+
+    - unique_id: alpha_read_handled_register
+      command_topic: "Alpha2MQTT/request/read/register/handled"
+      name: "Alpha Read Handled Register"
+      command_template: "{\"registerAddress\": \"{{ states('input_text.input_read_handled_register_register_address') }}\" }"
+      qos: 0
+      retain: false
+      entity_category: "config"
+      icon: "mdi:database-export"
+
+    - unique_id: alpha_read_raw_register
+      command_topic: "Alpha2MQTT/request/read/register/raw"
+      name: "Alpha Read Raw Register"
+      command_template: "{\"registerAddress\": \"{{ states('input_text.input_read_raw_register_register_address') }}\", dataBytes: {{ states('input_number.input_read_raw_register_data_bytes')|int }} }"
+      qos: 0
+      retain: false
+      entity_category: "config"
+      icon: "mdi:database-export"
+
+    - unique_id: alpha_write_raw_data_register
+      command_topic: "Alpha2MQTT/request/write/register/raw/data"
+      name: "Alpha Write Raw Data Register"
+      command_template: "{\"registerAddress\": \"{{ states('input_text.input_write_raw_data_register_register_address') }}\", dataBytes: {{ states('input_number.input_write_raw_data_register_data_bytes')|int }}, value: {{ states('input_number.input_write_raw_data_register_value')|int }} }"
+      qos: 0
+      retain: false
+      entity_category: "config"
+      icon: "mdi:database-export"
+
+
+#MQTT Sensors
+  sensor:
+#Inverter Sensors
+
+    - device_class: "battery"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:battery"
+      name: "Alpha Battery SOC"
+      unique_id: "alpha_battery_soc"
+      unit_of_measurement: "%"
+      state_topic: "HomeAssistant/MQTTSensor/REG_BATTERY_HOME_R_SOC"
+      value_template: "{{ value | int }}"
+
+    - device_class: "power"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:battery-charging-100"
+      name: "Alpha Battery Power"
+      unique_id: "alpha_battery_power"
+      unit_of_measurement: "W"
+      state_topic: "HomeAssistant/MQTTSensor/REG_BATTERY_HOME_R_BATTERY_POWER"
+      value_template: "{{ value | int }}"
+
+    - device_class: "power"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:battery-charging"
+      name: "Alpha Battery Power Absolute"
+      unique_id: "alpha_battery_power_absolute"
+      unit_of_measurement: "W"
+      state_topic: "HomeAssistant/MQTTSensor/REG_BATTERY_HOME_R_BATTERY_POWER_ABSOLUTE"
+      value_template: "{{ value | int }}"
+
+    - device_class: "power"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:battery-arrow-up"
+      name: "Alpha Battery Power Charging"
+      unique_id: "alpha_battery_power_charging"
+      unit_of_measurement: "W"
+      state_topic: "HomeAssistant/MQTTSensor/REG_BATTERY_HOME_R_BATTERY_POWER_CHARGING"
+      value_template: "{{ value | int }}"
+
+    - device_class: "power"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:battery-arrow-down"
+      name: "Alpha Battery Power Discharging"
+      unique_id: "alpha_battery_power_discharging"
+      unit_of_measurement: "W"
+      state_topic: "HomeAssistant/MQTTSensor/REG_BATTERY_HOME_R_BATTERY_POWER_DISCHARGING"
+      value_template: "{{ value | int }}"
+
+    - device_class: "power"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:transmission-tower"
+      name: "Alpha Grid Power"
+      unique_id: "alpha_grid_power"
+      unit_of_measurement: "W"
+      state_topic: "HomeAssistant/MQTTSensor/REG_GRID_METER_R_TOTAL_ACTIVE_POWER_1"
+      value_template: "{{ value | int }}"
+
+    - device_class: "power"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:transmission-tower"
+      name: "Alpha Grid Power Absolute"
+      unique_id: "alpha_grid_power_absolute"
+      unit_of_measurement: "W"
+      state_topic: "HomeAssistant/MQTTSensor/REG_GRID_METER_R_TOTAL_ACTIVE_POWER_1_ABSOLUTE"
+      value_template: "{{ value | int }}"
+
+    - device_class: "power"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:transmission-tower-export"
+      name: "Alpha Grid Power Exporting"
+      unique_id: "alpha_grid_power_exporting"
+      unit_of_measurement: "W"
+      state_topic: "HomeAssistant/MQTTSensor/REG_GRID_METER_R_TOTAL_ACTIVE_POWER_1_EXPORTING"
+      value_template: "{{ value | int }}"
+
+    - device_class: "power"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:transmission-tower-import"
+      name: "Alpha Grid Power Importing"
+      unique_id: "alpha_grid_power_importing"
+      unit_of_measurement: "W"
+      state_topic: "HomeAssistant/MQTTSensor/REG_GRID_METER_R_TOTAL_ACTIVE_POWER_1_IMPORTING"
+      value_template: "{{ value | int }}"
+
+    - device_class: "current"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:alpha-a"
+      name: "Alpha Grid Current"
+      unique_id: "alpha_grid_current"
+      unit_of_measurement: "A"
+      state_topic: "HomeAssistant/MQTTSensor/REG_CUSTOM_GRID_CURRENT_A_PHASE"
+      value_template: "{{ value | float }}"
+
+    - device_class: "power"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:home-import-outline"
+      name: "Alpha Load"
+      unique_id: "alpha_load"
+      unit_of_measurement: "W"
+      state_topic: "HomeAssistant/MQTTSensor/REG_CUSTOM_LOAD"
+      value_template: "{{ value | int }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:transmission-tower"
+      name: "Alpha Grid Status"
+      unique_id: "alpha_grid_status"
+      state_topic: "HomeAssistant/MQTTSensor/GRID_STATUS"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:battery-unknown"
+      name: "Alpha Battery Status"
+      unique_id: "alpha_battery_status"
+      state_topic: "HomeAssistant/MQTTSensor/BATTERY_STATUS"
+      value_template: "{{ value | string }}"
+
+
+    - device_class: "voltage"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:alpha-v"
+      name: "Alpha Battery Voltage"
+      unique_id: "alpha_battery_voltage"
+      unit_of_measurement: "V"
+      state_topic: "HomeAssistant/MQTTSensor/REG_BATTERY_HOME_R_VOLTAGE"
+      value_template: "{{ value | float }}"
+
+    - device_class: "current"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:alpha-a"
+      name: "Alpha Battery Current"
+      unique_id: "alpha_battery_current"
+      unit_of_measurement: "A"
+      state_topic: "HomeAssistant/MQTTSensor/REG_BATTERY_HOME_R_CURRENT"
+      value_template: "{{ value | float }}"
+
+    - device_class: "temperature"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:thermometer"
+      name: "Alpha Battery Temperature"
+      unique_id: "alpha_battery_temperature"
+      unit_of_measurement: "°C"
+      state_topic: "HomeAssistant/MQTTSensor/REG_BATTERY_HOME_R_MAX_CELL_TEMPERATURE"
+      value_template: "{{ value | float }}"
+
+    - device_class: "power"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:solar-power"
+      name: "Alpha Solar Power"
+      unique_id: "alpha_solar_power"
+      unit_of_measurement: "W"
+      state_topic: "HomeAssistant/MQTTSensor/REG_PV_METER_R_TOTAL_ACTIVE_POWER_1"
+      value_template: "{{ value | int }}"
+
+    - device_class: "current"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:alpha-a"
+      name: "Alpha Inverter Current"
+      unique_id: "alpha_inverter_current"
+      unit_of_measurement: "A"
+      state_topic: "HomeAssistant/MQTTSensor/REG_INVERTER_HOME_R_CURRENT_L1"
+      value_template: "{{ value | float }}"
+
+    - device_class: "temperature"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:thermometer"
+      name: "Alpha Inverter Temperature"
+      unique_id: "alpha_inverter_temperature"
+      unit_of_measurement: "°C"
+      state_topic: "HomeAssistant/MQTTSensor/REG_INVERTER_HOME_R_INVERTER_TEMP"
+      value_template: "{{ value | float }}"
+
+    - device_class: "power"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:meter-electric-outline"
+      name: "Alpha Inverter Power"
+      unique_id: "alpha_inverter_power"
+      unit_of_measurement: "W"
+      state_topic: "HomeAssistant/MQTTSensor/REG_INVERTER_HOME_R_POWER_L1_1"
+      value_template: "{{ value | int }}"
+
+    - device_class: "voltage"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:alpha-v"
+      name: "Alpha Grid Voltage"
+      unique_id: "alpha_grid_voltage"
+      unit_of_measurement: "V"
+      state_topic: "HomeAssistant/MQTTSensor/REG_GRID_METER_R_VOLTAGE_OF_A_PHASE"
+      value_template: "{{ value | float }}"
+
+    - device_class: "voltage"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:alpha-v"
+      name: "Alpha Solar Voltage"
+      unique_id: "alpha_solar_voltage"
+      unit_of_measurement: "V"
+      state_topic: "HomeAssistant/MQTTSensor/REG_PV_METER_R_VOLTAGE_OF_A_PHASE"
+      value_template: "{{ value | float }}"
+
+    - device_class: "voltage"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:alpha-v"
+      name: "Alpha Inverter Voltage"
+      unique_id: "alpha_inverter_voltage"
+      unit_of_measurement: "V"
+      state_topic: "HomeAssistant/MQTTSensor/REG_INVERTER_HOME_R_VOLTAGE_L1"
+      value_template: "{{ value | float }}"
+
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Dispatch Start"
+      unique_id: "alpha_dispatch_start"
+      state_topic: "HomeAssistant/MQTTSensor/REG_DISPATCH_RW_DISPATCH_START"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Dispatch Mode"
+      unique_id: "alpha_dispatch_mode"
+      state_topic: "HomeAssistant/MQTTSensor/REG_DISPATCH_RW_DISPATCH_MODE"
+      value_template: "{{ value | string }}"
+
+    - device_class: "battery"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:battery"
+      name: "Alpha Dispatch SOC"
+      unique_id: "alpha_dispatch_soc"
+      unit_of_measurement: "%"
+      state_topic: "HomeAssistant/MQTTSensor/REG_DISPATCH_RW_DISPATCH_SOC"
+      value_template: "{{ value | int }}"
+
+    - device_class: "power"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:battery-charging-100"
+      name: "Alpha Dispatch Power"
+      unique_id: "alpha_dispatch_power"
+      unit_of_measurement: "W"
+      state_topic: "HomeAssistant/MQTTSensor/REG_DISPATCH_RW_ACTIVE_POWER_1"
+      value_template: "{{ value | int }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:clock-out"
+      name: "Alpha Dispatch Time"
+      unique_id: "alpha_dispatch_time"
+      unit_of_measurement: "s"
+      state_topic: "HomeAssistant/MQTTSensor/REG_DISPATCH_RW_DISPATCH_TIME_1"
+      value_template: "{{ value | int }}"
+
+    - device_class: "frequency"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:sine-wave"
+      name: "Alpha Grid Frequency"
+      unique_id: "alpha_grid_frequency"
+      unit_of_measurement: "Hz"
+      state_topic: "HomeAssistant/MQTTSensor/REG_GRID_METER_R_FREQUENCY"
+      value_template: "{{ value | float }}"
+
+    - device_class: "frequency"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:sine-wave"
+      name: "Alpha Solar Frequency"
+      unique_id: "alpha_solar_frequency"
+      unit_of_measurement: "Hz"
+      state_topic: "HomeAssistant/MQTTSensor/REG_PV_METER_R_FREQUENCY"
+      value_template: "{{ value | float }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha System Fault"
+      unique_id: "alpha_system_fault"
+      state_topic: "HomeAssistant/MQTTSensor/REG_SYSTEM_OP_R_SYSTEM_FAULT_1"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Battery Fault"
+      unique_id: "alpha_battery_fault"
+      state_topic: "HomeAssistant/MQTTSensor/REG_BATTERY_HOME_R_BATTERY_FAULT_1"
+      value_template: "{{ value | string }}"
+
+    - device_class: "energy"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:battery-plus"
+      name: "Alpha Battery Total Charge Energy"
+      unique_id: "alpha_battery_total_charge_energy"
+      unit_of_measurement: "kWh"
+      state_topic: "HomeAssistant/MQTTSensor/REG_BATTERY_HOME_R_BATTERY_CHARGE_ENERGY_1"
+      value_template: "{{ value | int }}"
+
+    - device_class: "energy"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:battery-minus"
+      name: "Alpha Battery Total Discharge Energy"
+      unique_id: "alpha_battery_total_discharge_energy"
+      unit_of_measurement: "kWh"
+      state_topic: "HomeAssistant/MQTTSensor/REG_BATTERY_HOME_R_BATTERY_DISCHARGE_ENERGY_1"
+      value_template: "{{ value | int }}"
+
+    - device_class: "energy"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:power-plug-battery"
+      name: "Alpha Battery Total Charge Energy From Grid"
+      unique_id: "alpha_battery_total_charge_energy_from_grid"
+      unit_of_measurement: "kWh"
+      state_topic: "HomeAssistant/MQTTSensor/REG_BATTERY_HOME_R_BATTERY_ENERGY_CHARGE_FROM_GRID_1"
+      value_template: "{{ value | int }}"
+
+    - device_class: "energy"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:solar-power-variant-outline"
+      name: "Alpha System Total Solar Energy"
+      unique_id: "alpha_system_total_solar_energy"
+      unit_of_measurement: "kWh"
+      state_topic: "HomeAssistant/MQTTSensor/REG_SYSTEM_OP_R_SYSTEM_TOTAL_PV_ENERGY_1"
+      value_template: "{{ value | int }}"
+
+    - device_class: "energy"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:transmission-tower-export"
+      name: "Alpha System Total Energy Exported To Grid"
+      unique_id: "alpha_system_total_energy_exported_to_grid"
+      unit_of_measurement: "kWh"
+      state_topic: "HomeAssistant/MQTTSensor/REG_GRID_METER_R_TOTAL_ENERGY_FEED_TO_GRID_1"
+      value_template: "{{ value | int }}"
+
+    - device_class: "energy"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:transmission-tower-import"
+      name: "Alpha System Total Energy Imported From Grid"
+      unique_id: "alpha_system_total_energy_imported_from_grid"
+      unit_of_measurement: "kWh"
+      state_topic: "HomeAssistant/MQTTSensor/REG_GRID_METER_R_TOTAL_ENERGY_CONSUMED_FROM_GRID_1"
+      value_template: "{{ value | int }}"
+
+
+
+
+
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Dispatch Charge Response Status"
+      unique_id: "alpha_dispatch_charge_response_status"
+      state_topic: "HomeAssistant/MQTTSensor/CHARGE_RESPONSE_responseStatus"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Dispatch Charge Failure Detail"
+      unique_id: "alpha_dispatch_charge_failure_detail"
+      state_topic: "HomeAssistant/MQTTSensor/CHARGE_RESPONSE_failureDetail"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Dispatch Normal Response Status"
+      unique_id: "alpha_dispatch_normal_response_status"
+      state_topic: "HomeAssistant/MQTTSensor/NORMAL_RESPONSE_responseStatus"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Dispatch Normal Failure Detail"
+      unique_id: "alpha_dispatch_normal_failure_detail"
+      state_topic: "HomeAssistant/MQTTSensor/NORMAL_RESPONSE_failureDetail"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Dispatch Discharge Response Status"
+      unique_id: "alpha_dispatch_discharge_response_status"
+      state_topic: "HomeAssistant/MQTTSensor/DISCHARGE_RESPONSE_responseStatus"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Dispatch Discharge Failure Detail"
+      unique_id: "alpha_dispatch_discharge_failure_detail"
+      state_topic: "HomeAssistant/MQTTSensor/DISCHARGE_RESPONSE_failureDetail"
+      value_template: "{{ value | string }}"
+
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Handled Register Response Status"
+      unique_id: "alpha_read_handled_register_response_status"
+      state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_responseStatus"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Handled Register Register Address"
+      unique_id: "alpha_read_handled_register_register_address"
+      state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_registerAddress"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Handled Register Function Code"
+      unique_id: "alpha_read_handled_register_function_code"
+      state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_functionCode"
+      value_template: "{{ value | int }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Handled Register Register Name"
+      unique_id: "alpha_read_handled_register_register_name"
+      state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_registerName"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Handled Register Data Type"
+      unique_id: "alpha_read_handled_register_data_type"
+      state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_dataType"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Handled Register Data Value"
+      unique_id: "alpha_read_handled_register_data_value"
+      state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_dataValue"
+      value_template: "{{ value | int }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Handled Register Formatted Data Value"
+      unique_id: "alpha_read_handled_register_formatted_data_value"
+      state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_formattedDataValue"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Handled Register Raw Data Size"
+      unique_id: "alpha_read_handled_register_raw_data_size"
+      state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_rawDataSize"
+      value_template: "{{ value | int }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Handled Register Raw Data"
+      unique_id: "alpha_read_handled_register_raw_data"
+      state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_rawData"
+      value_template: "{{ value | string }}"
+
+
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Raw Register Response Status"
+      unique_id: "alpha_read_raw_register_response_status"
+      state_topic: "HomeAssistant/MQTTSensor/READRAW_RESPONSE_responseStatus"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Raw Register Register Address"
+      unique_id: "alpha_read_raw_register_register_address"
+      state_topic: "HomeAssistant/MQTTSensor/READRAW_RESPONSE_registerAddress"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Raw Register Function Code"
+      unique_id: "alpha_read_raw_register_function_code"
+      state_topic: "HomeAssistant/MQTTSensor/READRAW_RESPONSE_functionCode"
+      value_template: "{{ value | int }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Raw Register Raw Data Size"
+      unique_id: "alpha_read_raw_register_raw_data_size"
+      state_topic: "HomeAssistant/MQTTSensor/READRAW_RESPONSE_rawDataSize"
+      value_template: "{{ value | int }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Read Raw Register Raw Data"
+      unique_id: "alpha_read_raw_register_raw_data"
+      state_topic: "HomeAssistant/MQTTSensor/READRAW_RESPONSE_rawData"
+      value_template: "{{ value | string }}"
+
+
+
+
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Write Raw Data Register Response Status"
+      unique_id: "alpha_write_raw_data_register_response_status"
+      state_topic: "HomeAssistant/MQTTSensor/WRITERAW_RESPONSE_responseStatus"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Write Raw Data Register Register Address"
+      unique_id: "alpha_write_raw_data_register_register_address"
+      state_topic: "HomeAssistant/MQTTSensor/WRITERAW_RESPONSE_registerAddress"
+      value_template: "{{ value | string }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Write Raw Data Register Function Code"
+      unique_id: "alpha_write_raw_data_register_function_code"
+      state_topic: "HomeAssistant/MQTTSensor/WRITERAW_RESPONSE_functionCode"
+      value_template: "{{ value | int }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Write Raw Data Register Raw Data Size"
+      unique_id: "alpha_write_raw_data_register_raw_data_size"
+      state_topic: "HomeAssistant/MQTTSensor/WRITERAW_RESPONSE_rawDataSize"
+      value_template: "{{ value | int }}"
+
+    - state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:information-variant"
+      name: "Alpha Write Raw Data Register Raw Data"
+      unique_id: "alpha_write_raw_data_register_raw_data"
+      state_topic: "HomeAssistant/MQTTSensor/WRITERAW_RESPONSE_rawData"
+      value_template: "{{ value | string }}"
+
+
+
+
+#Sensors
+sensor:
+#Inverter Helpers
+  - platform: integration
+    method: trapezoidal
+    unit_time: h
+    unit_prefix: k
+    source: sensor.alpha_battery_power_charging
+    name: "Alpha REIMANN Battery Power Charging"
+    unique_id: "alpha_reimann_battery_power_charging"
+    round: 2
+
+  - platform: integration
+    method: trapezoidal
+    unit_time: h
+    unit_prefix: k
+    source: sensor.alpha_battery_power_discharging
+    name: "Alpha REIMANN Battery Power Discharging"
+    unique_id: "alpha_reimann_battery_power_discharging"
+    round: 2
+
+  - platform: integration
+    method: trapezoidal
+    unit_time: h
+    unit_prefix: k
+    source: sensor.alpha_grid_power_exporting
+    name: "Alpha REIMANN Grid Power Exporting"
+    unique_id: "alpha_reimann_grid_power_exporting"
+    round: 2
+
+  - platform: integration
+    method: trapezoidal
+    unit_time: h
+    unit_prefix: k
+    source: sensor.alpha_grid_power_importing
+    name: "Alpha REIMANN Grid Power Importing"
+    unique_id: "alpha_reimann_grid_power_importing"
+    round: 2
+
+  - platform: integration
+    method: trapezoidal
+    unit_time: h
+    unit_prefix: k
+    source: sensor.alpha_load
+    name: "Alpha REIMANN Load"
+    unique_id: "alpha_reimann_load"
+    round: 2
+
+  - platform: integration
+    method: trapezoidal
+    unit_time: h
+    unit_prefix: k
+    source: sensor.alpha_solar_power
+    name: "Alpha REIMANN Solar Power"
+    unique_id: "alpha_reimann_solar_power"
+    round: 2
+
+
+
+#Inverter Utility Meters
+utility_meter:
+# Daily
+  alpha_utility_meter_daily_battery_power_charge:
+    source: sensor.alpha_reimann_battery_power_charging
+    cycle: daily
+    name: "Alpha UTILITY METER Daily Total Battery Charge"
+    unique_id: "alpha_utility_meter_daily_battery_power_charge"
+    offset: 0
+    delta_values: false
+    net_consumption: false
+  alpha_utility_meter_daily_battery_power_discharge:
+    source: sensor.alpha_reimann_battery_power_discharging
+    cycle: daily
+    name: "Alpha UTILITY METER Daily Total Battery Discharge"
+    unique_id: "alpha_utility_meter_daily_battery_power_discharge"
+    offset: 0
+    delta_values: false
+    net_consumption: false
+  alpha_utility_meter_daily_grid_power_export:
+    source: sensor.alpha_reimann_grid_power_exporting
+    cycle: daily
+    name: "Alpha UTILITY METER Daily Total Grid Export"
+    unique_id: "alpha_utility_meter_daily_grid_power_export"
+    offset: 0
+    delta_values: false
+    net_consumption: false
+  alpha_utility_meter_daily_grid_power_import:
+    source: sensor.alpha_reimann_grid_power_importing
+    cycle: daily
+    name: "Alpha UTILITY METER Daily Total Grid Import"
+    unique_id: "alpha_utility_meter_daily_grid_power_import"
+    offset: 0
+    delta_values: false
+    net_consumption: false
+  alpha_utility_meter_daily_load:
+    source: sensor.alpha_reimann_load
+    cycle: daily
+    name: "Alpha UTILITY METER Daily Total Load"
+    unique_id: "alpha_utility_meter_daily_load"
+    offset: 0
+    delta_values: false
+    net_consumption: false
+  alpha_utility_meter_daily_solar_power:
+    source: sensor.alpha_reimann_solar_power
+    cycle: daily
+    name: "Alpha UTILITY METER Daily Total Solar Power"
+    unique_id: "alpha_utility_meter_daily_solar_power"
+    offset: 0
+    delta_values: false
+    net_consumption: false
+
+# Monthly
+  alpha_utility_meter_monthly_battery_power_charge:
+    source: sensor.alpha_reimann_battery_power_charging
+    cycle: monthly
+    name: "Alpha UTILITY METER Monthly Total Battery Charge"
+    unique_id: "alpha_utility_meter_monthly_battery_power_charge"
+    offset: 0
+    delta_values: false
+    net_consumption: false
+  alpha_utility_meter_monthly_battery_power_discharge:
+    source: sensor.alpha_reimann_battery_power_discharging
+    cycle: monthly
+    name: "Alpha UTILITY METER Monthly Total Battery Discharge"
+    unique_id: "alpha_utility_meter_monthly_battery_power_discharge"
+    offset: 0
+    delta_values: false
+    net_consumption: false
+  alpha_utility_meter_monthly_grid_power_export:
+    source: sensor.alpha_reimann_grid_power_exporting
+    cycle: monthly
+    name: "Alpha UTILITY METER Monthly Total Grid Export"
+    unique_id: "alpha_utility_meter_monthly_grid_power_export"
+    offset: 0
+    delta_values: false
+    net_consumption: false
+  alpha_utility_meter_monthly_grid_power_import:
+    source: sensor.alpha_reimann_grid_power_importing
+    cycle: monthly
+    name: "Alpha UTILITY METER Monthly Total Grid Import"
+    unique_id: "alpha_utility_meter_monthly_grid_power_import"
+    offset: 0
+    delta_values: false
+    net_consumption: false
+  alpha_utility_meter_monthly_load:
+    source: sensor.alpha_reimann_load
+    cycle: monthly
+    name: "Alpha UTILITY METER Monthly Total Load"
+    unique_id: "alpha_utility_meter_monthly_load"
+    offset: 0
+    delta_values: false
+    net_consumption: false
+  alpha_utility_meter_monthly_solar_power:
+    source: sensor.alpha_reimann_solar_power
+    cycle: monthly
+    name: "Alpha UTILITY METER Monthly Total Solar Power"
+    unique_id: "alpha_utility_meter_monthly_solar_power"
+    offset: 0
+    delta_values: false
+    net_consumption: false
+
+
+
+
+input_number:
+  input_dispatch_charge_watts:
+    name: "Input Dispatch Charge Watts"
+    initial: 3000
+    min: 0
+    max: 3000
+#    step: 100
+    mode: box
+    icon: "mdi:battery-positive"
+    unit_of_measurement: "W"
+  input_dispatch_discharge_watts:
+    name: "Input Dispatch Discharge Watts"
+    initial: 3000
+    min: 0
+    max: 3000
+#    step: 100
+    mode: box
+    icon: "mdi:battery-negative"
+    unit_of_measurement: "W"
+  input_dispatch_discharge_time:
+    name: "Input Dispatch Discharge Time"
+    initial: 1800
+    min: 0
+    max: 604800
+#    step: 100
+    mode: box
+    icon: "mdi:clock-time-eight"
+    unit_of_measurement: "s"
+  input_dispatch_charge_time:
+    name: "Input Dispatch Charge Time"
+    initial: 25000
+    min: 0
+    max: 604800
+#    step: 100
+    mode: box
+    icon: "mdi:clock-time-eight"
+    unit_of_measurement: "s"
+  input_dispatch_charge_soc:
+    name: "Input Dispatch Charge Target SOC"
+    initial: 100
+    min: 20
+    max: 100
+    step: 1
+    mode: slider
+    icon: "mdi:battery-arrow-up"
+    unit_of_measurement: "%"
+  input_dispatch_discharge_soc:
+    name: "Input Dispatch Discharge Target SOC"
+    initial: 20
+    min: 20
+    max: 100
+    step: 1
+    mode: slider
+    icon: "mdi:battery-arrow-down"
+    unit_of_measurement: "%"
+  input_read_raw_register_data_bytes:
+    name: "Input Read Raw Register Data Bytes"
+    initial: 2
+    min: 2
+    max: 16
+    step: 1
+    mode: box
+    icon: "mdi:arrow-split-horizontal"
+  input_write_raw_data_register_data_bytes:
+    name: "Input Write Raw Data Register Data Bytes"
+    initial: 2
+    min: 2
+    max: 16
+    step: 1
+    mode: box
+    icon: "mdi:arrow-split-horizontal"
+  input_write_raw_data_register_value:
+    name: "Input Write Raw Data Register Value"
+    initial: 1
+    min: 0
+    max: 9999999
+    step: 1
+    mode: box
+    icon: "mdi:counter"
+
+
+input_text:
+  input_read_handled_register_register_address:
+    name: "Input Read Handled Register Address"
+    initial: "0x0102"
+    min: 6
+    max: 6
+    mode: text
+    icon: "mdi:map-marker"
+    pattern: "0x[A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]"
+
+  input_read_raw_register_register_address:
+    name: "Input Read Raw Register Address"
+    initial: "0x0102"
+    min: 6
+    max: 6
+    mode: text
+    icon: "mdi:map-marker"
+    pattern: "0x[A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]"
+
+  input_write_raw_data_register_register_address:
+    name: "Input Write Raw Data Register Address"
+    initial: "0x0880"
+    min: 6
+    max: 6
+    mode: text
+    icon: "mdi:map-marker"
+    pattern: "0x[A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]"
+
+
+#Recorder
+# Pointless keeping some values over time
+# So looking to keep those we want to chart at any sort of frequency
+# Battery charging/discharging, SOC, importing/exporting, load and PV generation
+# And also the utility meters as they are supposedly going to keep us aggregate figures by day
+
+#recorder:
+#  exclude:
+#    entities:
+#      - sensor.alpha_battery_current

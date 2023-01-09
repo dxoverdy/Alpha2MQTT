@@ -1,0 +1,17 @@
+Node Red Flow Changes
+Alpha2MQTT In to Out flow retired
+Alpha Charge TOU - A new flow to demonstrate how to start charging at a particular wattage to a target percentage for a specified period of time, kicking off a set time
+Alpha Dispatch Responses - A new flow to handle responses to Dispatch Mode changes
+Alpha Register Read Write - A new flow to handle responses to Reading and Writing registers
+Alpha Ten Second State - A new flow which just handles the default ten second state
+Alpha One Minute State - A new flow which just handles the default one minute state
+Alpha Five Minute State - A new flow which just handles the default five minute state
+Alpha One Hour State - A new flow which just handles the default one hour state
+Alpha One Day - A new flow which just handles the default one day state
+
+Home Assistant Changes
+configuration.yaml.txt - Contents of a configuration.yaml file for home assistant which covers off all default states, reading and writing registers, and kicking off dispatch modes
+AlphaDashboard.txt - The source code to a dashboard which displays information in real time and over time
+AlphaControlDashboard.txt - The source code to a dashboard which can kick off charge and discharge dispatch modes
+AlphaReadRegisterDashboard.txt - The source code to a dashboard which can read any handled or raw register
+AlphaWriteRegisterDashboard.txt - The source code to a dashboard which can write to any data register

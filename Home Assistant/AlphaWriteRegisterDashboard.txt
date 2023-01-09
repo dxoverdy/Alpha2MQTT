@@ -1,0 +1,28 @@
+views:
+  - theme: Backend-selected
+    title: Control
+    badges: []
+    cards:
+      - type: entities
+        entities:
+          - entity: input_text.input_write_raw_data_register_register_address
+            name: Register Address
+          - entity: input_number.input_write_raw_data_register_data_bytes
+            name: Data Bytes
+          - entity: input_number.input_write_raw_data_register_value
+            name: Value
+          - entity: button.alpha_write_raw_data_register
+            name: Write Raw Register
+          - entity: sensor.alpha_write_raw_data_register_response_status
+            name: Response Status
+            secondary_info: last-updated
+          - entity: sensor.alpha_write_raw_data_register_register_address
+            name: Register Address
+          - entity: sensor.alpha_write_raw_data_register_function_code
+            name: Function Code
+          - entity: sensor.alpha_write_raw_data_register_raw_data_size
+            name: Raw Data Size
+          - entity: sensor.alpha_write_raw_data_register_raw_data
+            name: Raw Data
+        title: Write Raw Register
+title: Alpha Write Register
