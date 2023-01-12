@@ -27,6 +27,9 @@ Customise these options as per README.txt.  Please read README.txt before contin
 //#define INVERTER_SMILE_T10			// Uncomment for SMILE-T10
 //#define INVERTER_STORION_T30			// Uncomment for STORION T30
 
+// If values for some registers such as voltage or temperatures appear to be out by a decimal place or two, set this to true
+// to use legacy calcuations
+#define LEGACY_CALCULATIONS false
 
 // Update with your Wifi details
 #define WIFI_SSID	"Stardust"

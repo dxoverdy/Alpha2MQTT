@@ -1885,7 +1885,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Short
 			// 1V
 			// Presume * 0.1 as result appears to reflect this.  I.e. my voltage 2421, or 242.1
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * (LEGACY_CALCULATIONS ? 1 : 0.1));
 			break;
 		}
 		case REG_GRID_METER_R_VOLTAGE_OF_B_PHASE:
@@ -1893,7 +1893,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Short
 			// 1V
 			// Presume * 0.1 as result appears to reflect this.  I.e. my voltage 2421, or 242.1
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * (LEGACY_CALCULATIONS ? 1 : 0.1));
 			break;
 		}
 		case REG_GRID_METER_R_VOLTAGE_OF_C_PHASE:
@@ -1901,7 +1901,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Short
 			// 1V
 			// Presume * 0.1 as result appears to reflect this.  I.e. my voltage 2421, or 242.1
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * (LEGACY_CALCULATIONS ? 1 : 0.1));
 			break;
 		}
 		case REG_GRID_METER_R_CURRENT_OF_A_PHASE:
@@ -2114,7 +2114,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Short
 			// 1V
 			// Presume * 0.1 as result appears to reflect this.  I.e. my voltage 2421, or 242.1
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * (LEGACY_CALCULATIONS ? 1 : 0.1));
 			break;
 		}
 		case REG_PV_METER_R_VOLTAGE_OF_B_PHASE:
@@ -2122,7 +2122,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Short
 			// 1V
 			// Presume * 0.1 as result appears to reflect this.  I.e. my voltage 2421, or 242.1
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * (LEGACY_CALCULATIONS ? 1 : 0.1));
 			break;
 		}
 		case REG_PV_METER_R_VOLTAGE_OF_C_PHASE:
@@ -2130,7 +2130,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Short
 			// 1V
 			// Presume * 0.1 as result appears to reflect this.  I.e. my voltage 2421, or 242.1
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * 0.1);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * (LEGACY_CALCULATIONS ? 1 : 0.1));
 			break;
 		}
 		case REG_PV_METER_R_CURRENT_OF_A_PHASE:
@@ -2429,7 +2429,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Short
 			// 0.001V/bit
 			// My min cell voltage is reading as 334, so * 0.001 = 0.334V.  I consider the document wrong, think it should be 0.01
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * 0.01);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * (LEGACY_CALCULATIONS ? 0.001 : 0.01));
 			break;
 		}
 		case REG_BATTERY_HOME_R_PACK_ID_OF_MAX_CELL_VOLTAGE:
@@ -2453,7 +2453,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Short
 			// 0.001V/bit
 			// My min cell voltage is reading as 335, so * 0.001 = 0.335V.  I consider the document wrong, think it should be 0.01
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * 0.01);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * (LEGACY_CALCULATIONS ? 0.001 : 0.01));
 			break;
 		}
 		case REG_BATTERY_HOME_R_PACK_ID_OF_MIN_CELL_TEMPERATURE:
@@ -2476,6 +2476,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 		{
 			// Type: Short
 			// 0.001D/bit
+			// ###HERE###
 			sprintf(rs->dataValueFormatted, "%0.02f", rs->signedShortValue * 0.1);
 			break;
 		}
@@ -2499,6 +2500,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 		{
 			// Type: Short
 			// 0.001D/bit
+			// ###HERE###
 			sprintf(rs->dataValueFormatted, "%0.02f", rs->signedShortValue * 0.1);
 			break;
 		}
@@ -3123,7 +3125,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 		{
 			// Type: Unsigned Short
 			// 0.1Hz/bit
-			// Zero for me
+			// ###HERE###
 			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * 0.01);
 			break;
 		}
@@ -3282,7 +3284,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Short
 			// 0.1D/bit
 			// Mine returns 2720, so assuming actually multiplied by 0.01 to bring to something realistic
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * 0.01);
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * (LEGACY_CALCULATIONS ? 0.1 : 0.01));
 			break;
 		}
 		case REG_INVERTER_HOME_R_INVERTER_WARNING_1_1:
@@ -3733,6 +3735,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Short
 			// 0.1/bit
 			// Corresponds to Discharging Cut off SOC (%) on web interface.  Doesn't appear to need multiplying
+			// ###HERE###
 			sprintf(rs->dataValueFormatted, "%u", rs->unsignedShortValue);
 			break;
 		}
@@ -3769,6 +3772,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Short
 			// 0.1/bit
 			// Corresponds to Charging Stops at SOC in web interface, doesn't appear to need multiplying
+			// ###HERE###
 			sprintf(rs->dataValueFormatted, "%u", rs->unsignedShortValue);
 			break;
 		}
@@ -3941,7 +3945,8 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Integer
 			// 0.1kWh/bit
 			// Zero for me.  Multiplier is *presumably* wrong in documentation, see below
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.01);
+			// ###HERE###
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * (LEGACY_CALCULATIONS ? 0.1 : 0.01));
 			break;
 		}
 
@@ -3950,7 +3955,8 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Integer
 			// 0.1kWh/bit
 			// My value was 308695, and according to web interface my total PV is 3086kWh, so multiplier seems wrong
-			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * 0.01);
+			// ###HERE###
+			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedIntValue * (LEGACY_CALCULATIONS ? 0.1 : 0.01));
 			break;
 		}
 

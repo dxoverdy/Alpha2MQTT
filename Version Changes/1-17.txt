@@ -1,0 +1,6 @@
+Code changes
+Added LEGACY_CALCULATIONS definition to Definitions.h, default to false.
+
+During the original development of Alpha2MQTT on my B3, I found some multipliers in the documentation incorrect.  Subsequent users of Smile-5, B3 Plus have
+verified the same calculations as per my B3.  On a T10, perhaps with a legacy Modbus version, the multipliers are as per older documentation.
+If Temperature or Voltage is being reported to the wrong decimal place, change this to true
