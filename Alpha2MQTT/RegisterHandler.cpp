@@ -98,10 +98,10 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 	// CRC High Byte
 
 	// For custom registers
-	int16_t batteryPower;
-	int32_t pvPower;
-	int32_t gridPower;
-	uint16_t gridVoltage;
+	int16_t batteryPower = 0;
+	int32_t pvPower = 0;
+	int32_t gridPower = 0;
+	uint16_t gridVoltage = 0;
 
 	// Determine number of registers/data type/mqtt name based on register passed in
 	switch (registerAddress)
@@ -1664,6 +1664,17 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 		break;
 	}
 
+	case REG_CUSTOM_TOTAL_SOLAR_POWER:
+	{
+		// Custom, derive a safe total solar power using figures from either PV CT or in the case of hybrids, from the individual PV strings too.
+		rs->returnDataType = modbusReturnDataType::signedInt;
+		strcpy(rs->mqttName, "REG_CUSTOM_TOTAL_SOLAR_POWER");
+		rs->registerCount = 2;
+		break;
+	}
+
+	
+
 	default:
 	{
 		// Not a valid register we have written code to handle, do something here to prevent the send
@@ -1689,50 +1700,85 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			Plus the battery, providing that it is discharging AND grid not pulling(i.e. not forcibly discharging to grid)
 			*/
 
-			// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
+
 			uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_PV_METER_R_TOTAL_ACTIVE_POWER_1 >> 8, REG_PV_METER_R_TOTAL_ACTIVE_POWER_1 & 0xff, 0, 2, 0, 0 };
-			// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
 			result = _modBus->sendModbus(frame, sizeof(frame), rs);
 			if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
 			{
-				
 				pvPower = (int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]);
+				uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_INVERTER_HOME_R_PV1_POWER_1 >> 8, REG_INVERTER_HOME_R_PV1_POWER_1 & 0xff, 0, 2, 0, 0 };
+				result = _modBus->sendModbus(frame, sizeof(frame), rs);
 				if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
 				{
-					// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
-					uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_GRID_METER_R_TOTAL_ACTIVE_POWER_1 >> 8, REG_GRID_METER_R_TOTAL_ACTIVE_POWER_1 & 0xff, 0, 2, 0, 0 };
-					// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
+					pvPower = pvPower + ((int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]));
+					uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_INVERTER_HOME_R_PV2_POWER_1 >> 8, REG_INVERTER_HOME_R_PV2_POWER_1 & 0xff, 0, 2, 0, 0 };
 					result = _modBus->sendModbus(frame, sizeof(frame), rs);
-					gridPower = (int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]);
 					if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
 					{
-						// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
-						uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_BATTERY_HOME_R_BATTERY_POWER >> 8, REG_BATTERY_HOME_R_BATTERY_POWER & 0xff, 0, 1, 0, 0 };
-						// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
+						pvPower = pvPower + ((int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]));
+						uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_INVERTER_HOME_R_PV3_POWER_1 >> 8, REG_INVERTER_HOME_R_PV3_POWER_1 & 0xff, 0, 2, 0, 0 };
 						result = _modBus->sendModbus(frame, sizeof(frame), rs);
 						if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
 						{
-							batteryPower = (int16_t)(rs->data[0] << 8 | rs->data[1]);
-							rs->signedIntValue =
-								pvPower
-								-
-								// Minus feeding, if feeding
-								(gridPower < 0 ? abs(gridPower) : 0)
-								+
-								// Plus purchase, if purchasing
-								(gridPower > 0 ? gridPower : 0)
-								-
-								// Minus battery, if charging
-								(batteryPower < 0 ? abs(batteryPower) : 0)
-								+
-								// Plus battery, if discharging
-								(batteryPower > 0 ? batteryPower : 0);
+							pvPower = pvPower + ((int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]));
+							uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_INVERTER_HOME_R_PV4_POWER_1 >> 8, REG_INVERTER_HOME_R_PV4_POWER_1 & 0xff, 0, 2, 0, 0 };
+							result = _modBus->sendModbus(frame, sizeof(frame), rs);
+							if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+							{
+								pvPower = pvPower + ((int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]));
+								uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_INVERTER_HOME_R_PV5_POWER_1 >> 8, REG_INVERTER_HOME_R_PV5_POWER_1 & 0xff, 0, 2, 0, 0 };
+								result = _modBus->sendModbus(frame, sizeof(frame), rs);
+								if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+								{
+									pvPower = pvPower + ((int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]));
+									uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_INVERTER_HOME_R_PV6_POWER_1 >> 8, REG_INVERTER_HOME_R_PV6_POWER_1 & 0xff, 0, 2, 0, 0 };
+									result = _modBus->sendModbus(frame, sizeof(frame), rs);
+									if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+									{
+										pvPower = pvPower + ((int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]));
 
-							rs->dataSize = 4;
-							rs->data[0] = rs->signedIntValue >> 24;
-							rs->data[1] = rs->signedIntValue >> 16;
-							rs->data[2] = rs->signedIntValue >> 8;
-							rs->data[3] = rs->signedIntValue & 0xff;
+										if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+										{
+											// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
+											uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_GRID_METER_R_TOTAL_ACTIVE_POWER_1 >> 8, REG_GRID_METER_R_TOTAL_ACTIVE_POWER_1 & 0xff, 0, 2, 0, 0 };
+											// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
+											result = _modBus->sendModbus(frame, sizeof(frame), rs);
+											gridPower = (int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]);
+											if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+											{
+												// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
+												uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_BATTERY_HOME_R_BATTERY_POWER >> 8, REG_BATTERY_HOME_R_BATTERY_POWER & 0xff, 0, 1, 0, 0 };
+												// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
+												result = _modBus->sendModbus(frame, sizeof(frame), rs);
+												if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+												{
+													batteryPower = (int16_t)(rs->data[0] << 8 | rs->data[1]);
+													rs->signedIntValue =
+														pvPower
+														-
+														// Minus feeding, if feeding
+														(gridPower < 0 ? abs(gridPower) : 0)
+														+
+														// Plus purchase, if purchasing
+														(gridPower > 0 ? gridPower : 0)
+														-
+														// Minus battery, if charging
+														(batteryPower < 0 ? abs(batteryPower) : 0)
+														+
+														// Plus battery, if discharging
+														(batteryPower > 0 ? batteryPower : 0);
+
+													rs->dataSize = 4;
+													rs->data[0] = rs->signedIntValue >> 24;
+													rs->data[1] = rs->signedIntValue >> 16;
+													rs->data[2] = rs->signedIntValue >> 8;
+													rs->data[3] = rs->signedIntValue & 0xff;
+												}
+											}
+										}
+									}
+								}
+							}
 						}
 					}
 				}
@@ -1750,29 +1796,93 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			Ensure V > 0 to avoid division by zero
 			*/
 
-			// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
 			uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_GRID_METER_R_ACTIVE_POWER_OF_A_PHASE_1 >> 8, REG_GRID_METER_R_ACTIVE_POWER_OF_A_PHASE_1 & 0xff, 0, 2, 0, 0 };
-			// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
 			result = _modBus->sendModbus(frame, sizeof(frame), rs);
 			if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
 			{
-
 				gridPower = (int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]);
+
+				uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_GRID_METER_R_VOLTAGE_OF_A_PHASE >> 8, REG_GRID_METER_R_VOLTAGE_OF_A_PHASE & 0xff, 0, 1, 0, 0 };
+				result = _modBus->sendModbus(frame, sizeof(frame), rs);
 				if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
 				{
-					// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
-					uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_GRID_METER_R_VOLTAGE_OF_A_PHASE >> 8, REG_GRID_METER_R_VOLTAGE_OF_A_PHASE & 0xff, 0, 1, 0, 0 };
-					// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
+					gridVoltage = ((uint16_t)(rs->data[0] << 8 | rs->data[1])) * 0.1;
+
+					rs->signedShortValue = (gridVoltage == 0 ? 0 : gridPower / gridVoltage);
+
+					rs->dataSize = 2;
+					rs->data[0] = rs->signedShortValue >> 8;
+					rs->data[1] = rs->signedShortValue & 0xff;
+				}
+			}
+
+		}
+		else if (registerAddress == REG_CUSTOM_TOTAL_SOLAR_POWER)
+		{
+			strcpy(rs->returnDataTypeDesc, MODBUS_RETURN_DATA_TYPE_SIGNED_INT_DESC);
+
+			/*
+			PV if AC coupled is via  PV CT and results are stored in
+			REG_PV_METER_R_TOTAL_ACTIVE_POWER_1
+
+			PV if hybrid is via the individual string readings from within the Alpha, namely
+			REG_INVERTER_HOME_R_PV1_POWER_1
+			REG_INVERTER_HOME_R_PV2_POWER_1
+			REG_INVERTER_HOME_R_PV3_POWER_1
+			REG_INVERTER_HOME_R_PV4_POWER_1
+			REG_INVERTER_HOME_R_PV5_POWER_1
+			REG_INVERTER_HOME_R_PV6_POWER_1
+
+			So essentially to get a solar reading which is safe across all types, we will just add all these up and present as a custom reg
+			*/
+
+
+			uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_PV_METER_R_TOTAL_ACTIVE_POWER_1 >> 8, REG_PV_METER_R_TOTAL_ACTIVE_POWER_1 & 0xff, 0, 2, 0, 0 };
+			result = _modBus->sendModbus(frame, sizeof(frame), rs);
+			if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+			{
+				pvPower = (int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]);
+				uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_INVERTER_HOME_R_PV1_POWER_1 >> 8, REG_INVERTER_HOME_R_PV1_POWER_1 & 0xff, 0, 2, 0, 0 };
+				result = _modBus->sendModbus(frame, sizeof(frame), rs);
+				if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+				{
+					pvPower = pvPower + ((int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]));
+					uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_INVERTER_HOME_R_PV2_POWER_1 >> 8, REG_INVERTER_HOME_R_PV2_POWER_1 & 0xff, 0, 2, 0, 0 };
 					result = _modBus->sendModbus(frame, sizeof(frame), rs);
 					if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
 					{
-						gridVoltage = ((uint16_t)(rs->data[0] << 8 | rs->data[1])) * 0.1;
+						pvPower = pvPower + ((int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]));
+						uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_INVERTER_HOME_R_PV3_POWER_1 >> 8, REG_INVERTER_HOME_R_PV3_POWER_1 & 0xff, 0, 2, 0, 0 };
+						result = _modBus->sendModbus(frame, sizeof(frame), rs);
+						if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+						{
+							pvPower = pvPower + ((int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]));
+							uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_INVERTER_HOME_R_PV4_POWER_1 >> 8, REG_INVERTER_HOME_R_PV4_POWER_1 & 0xff, 0, 2, 0, 0 };
+							result = _modBus->sendModbus(frame, sizeof(frame), rs);
+							if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+							{
+								pvPower = pvPower + ((int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]));
+								uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_INVERTER_HOME_R_PV5_POWER_1 >> 8, REG_INVERTER_HOME_R_PV5_POWER_1 & 0xff, 0, 2, 0, 0 };
+								result = _modBus->sendModbus(frame, sizeof(frame), rs);
+								if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+								{
+									pvPower = pvPower + ((int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]));
+									uint8_t	frame[] = { ALPHA_SLAVE_ID, MODBUS_FN_READDATAREGISTER, REG_INVERTER_HOME_R_PV6_POWER_1 >> 8, REG_INVERTER_HOME_R_PV6_POWER_1 & 0xff, 0, 2, 0, 0 };
+									result = _modBus->sendModbus(frame, sizeof(frame), rs);
+									if (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+									{
+										pvPower = pvPower + ((int32_t)(rs->data[0] << 24 | rs->data[1] << 16 | rs->data[2] << 8 | rs->data[3]));
+										rs->signedIntValue = pvPower;
 
-						rs->signedShortValue = (gridVoltage == 0 ? 0 : gridPower / gridVoltage);
-
-						rs->dataSize = 2;
-						rs->data[0] = rs->signedShortValue >> 8;
-						rs->data[1] = rs->signedShortValue & 0xff;
+										rs->dataSize = 4;
+										rs->data[0] = rs->signedIntValue >> 24;
+										rs->data[1] = rs->signedIntValue >> 16;
+										rs->data[2] = rs->signedIntValue >> 8;
+										rs->data[3] = rs->signedIntValue & 0xff;
+									}
+								}
+							}
+						}
 					}
 				}
 			}
@@ -3125,7 +3235,6 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 		{
 			// Type: Unsigned Short
 			// 0.1Hz/bit
-			// ###HERE###
 			sprintf(rs->dataValueFormatted, "%0.02f", rs->unsignedShortValue * 0.01);
 			break;
 		}
@@ -3735,7 +3844,6 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Short
 			// 0.1/bit
 			// Corresponds to Discharging Cut off SOC (%) on web interface.  Doesn't appear to need multiplying
-			// ###HERE###
 			sprintf(rs->dataValueFormatted, "%u", rs->unsignedShortValue);
 			break;
 		}
@@ -3772,7 +3880,6 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// Type: Unsigned Short
 			// 0.1/bit
 			// Corresponds to Charging Stops at SOC in web interface, doesn't appear to need multiplying
-			// ###HERE###
 			sprintf(rs->dataValueFormatted, "%u", rs->unsignedShortValue);
 			break;
 		}
@@ -4273,8 +4380,7 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 		{
 			// Type: Signed Integer
 			// 1W/bit
-			// Current generation
-			// Positive = Load pulling / In theory should never be negative.
+			// Current load of house
 			sprintf(rs->dataValueFormatted, "%d", rs->signedIntValue);
 			break;
 		}
@@ -4295,6 +4401,16 @@ modbusRequestAndResponseStatusValues RegisterHandler::readHandledRegister(uint16
 			// 0.1A
 			// Current amps of Phase A
 			sprintf(rs->dataValueFormatted, "%d", rs->signedShortValue);
+			break;
+		}
+
+		case REG_CUSTOM_TOTAL_SOLAR_POWER:
+		{
+			// Type: Signed Integer
+			// 1W/bit
+			// Current generation
+			// Positive = Load pulling / In theory should never be negative.
+			sprintf(rs->dataValueFormatted, "%d", rs->signedIntValue);
 			break;
 		}
 		}

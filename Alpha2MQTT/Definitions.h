@@ -32,7 +32,7 @@ Customise these options as per README.txt.  Please read README.txt before contin
 #define LEGACY_CALCULATIONS false
 
 // Update with your Wifi details
-#define WIFI_SSID	"Stardust"
+#define WIFI_SSID		"Stardust"
 #define WIFI_PASSWORD	""
 
 // Update with your MQTT Broker details
@@ -442,7 +442,7 @@ Customise these options as per README.txt.  Please read README.txt before contin
 #define REG_CUSTOM_LOAD																0xFFFE	// // 1W/bit							// 4 Bytes		// Integer
 #define REG_CUSTOM_SYSTEM_DATE_TIME													0xFFFF	// dd/MMM/yyyy HH:mm:ss					// N/A			// Unsigned Char
 #define REG_CUSTOM_GRID_CURRENT_A_PHASE												0xFFFD	// 0.1A									// 2 Bytes		// Short
-
+#define REG_CUSTOM_TOTAL_SOLAR_POWER												0xFFFC
 // End of Handled Registered
 
 

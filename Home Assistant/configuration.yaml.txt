@@ -247,7 +247,7 @@ mqtt:
       name: "Alpha Solar Power"
       unique_id: "alpha_solar_power"
       unit_of_measurement: "W"
-      state_topic: "HomeAssistant/MQTTSensor/REG_PV_METER_R_TOTAL_ACTIVE_POWER_1"
+      state_topic: "HomeAssistant/MQTTSensor/REG_CUSTOM_TOTAL_SOLAR_POWER"
       value_template: "{{ value | int }}"
 
     - device_class: "current"
@@ -374,6 +374,16 @@ mqtt:
       unique_id: "alpha_solar_frequency"
       unit_of_measurement: "Hz"
       state_topic: "HomeAssistant/MQTTSensor/REG_PV_METER_R_FREQUENCY"
+      value_template: "{{ value | float }}"
+
+    - device_class: "frequency"
+      state_class: "measurement"
+      force_update: "true"
+      icon: "mdi:sine-wave"
+      name: "Alpha Inverter Frequency"
+      unique_id: "alpha_inverter_frequency"
+      unit_of_measurement: "Hz"
+      state_topic: "HomeAssistant/MQTTSensor/REG_INVERTER_HOME_R_FREQUENCY"
       value_template: "{{ value | float }}"
 
     - state_class: "measurement"

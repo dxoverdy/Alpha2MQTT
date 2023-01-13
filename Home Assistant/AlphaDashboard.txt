@@ -156,6 +156,9 @@ views:
           - type: entity
             entity: sensor.alpha_inverter_voltage
             name: Voltage
+          - type: entity
+            entity: sensor.alpha_inverter_frequency
+            name: Frequency
       - square: false
         columns: 3
         type: grid

@@ -1,0 +1,23 @@
+Code changes
+Added custom register REG_CUSTOM_TOTAL_SOLAR_POWER, the total of PV which works across both AC coupled and multi-string hybrid inverters
+Amended custom register REG_CUSTOM_LOAD to take account of REG_CUSTOM_TOTAL_SOLAR_POWER
+
+State Changes
+10 Second State - Added REG_CUSTOM_TOTAL_SOLAR_POWER
+10 Second State - Added REG_INVERTER_HOME_R_PV1_POWER_1 for anyone who wants to plot individual PV string charts
+10 Second State - Added REG_INVERTER_HOME_R_PV2_POWER_1 for anyone who wants to plot individual PV string charts
+10 Second State - Added REG_INVERTER_HOME_R_PV3_POWER_1 for anyone who wants to plot individual PV string charts
+10 Second State - Added REG_INVERTER_HOME_R_PV4_POWER_1 for anyone who wants to plot individual PV string charts
+10 Second State - Added REG_INVERTER_HOME_R_PV5_POWER_1 for anyone who wants to plot individual PV string charts
+10 Second State - Added REG_INVERTER_HOME_R_PV6_POWER_1 for anyone who wants to plot individual PV string charts
+
+One Hour State - Added REG_INVERTER_HOME_R_FREQUENCY for hybrid inverters
+
+Node-RED Changes
+Alpha Ten Second State.json modified to incorporate state change above
+Alpha One Hour State.json modified to incorporate state change above
+
+Home Assistant Changes
+configuration.yaml - Added sensor (Alpha Inverter Frequency / alpha_inverter_frequency) to pull from REG_INVERTER_HOME_R_FREQUENCY
+configuration.yaml - Modified sensor (Alpha Solar Power / alpha_solar_power) to pull from REG_CUSTOM_TOTAL_SOLAR_POWER
+AlphaDashboard.txt - Includes Alpha Inverter Frequency
