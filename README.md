@@ -77,6 +77,15 @@ Dispatch Mode (description as per documentation)
 Dispatch Power (W) (32000 Offset, < 32000 charge, > 32000 discharge)
 Dispatch SOC (%)
 Dispatch Time (S)
+
+PV1 Power (+/-) (W) - Hybrid Inverters Only
+PV2 Power (+/-) (W) - Hybrid Inverters Only
+PV3 Power (+/-) (W) - Hybrid Inverters Only
+PV4 Power (+/-) (W) - Hybrid Inverters Only
+PV5 Power (+/-) (W) - Hybrid Inverters Only
+PV6 Power (+/-) (W) - Hybrid Inverters Only
+
+Total Solar Power (+/-) (W) - Sum of PV Power (CT gathered) and Hybrid PV Power gathered
 ```
 
 #### Every minute:
@@ -97,6 +106,7 @@ Battery Total Charged From Grid (kWh)
 ```
 Grid Frequency (Hz)
 PV Frequency (Hz)
+Inverter Frequency (Hz)
 System Fault (description as per documentation)
 Battery Fault (description as per documentation)
 ```
