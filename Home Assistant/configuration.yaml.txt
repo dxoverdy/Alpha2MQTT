@@ -200,6 +200,7 @@ mqtt:
       unique_id: "alpha_grid_status"
       state_topic: "HomeAssistant/MQTTSensor/GRID_STATUS"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -208,7 +209,7 @@ mqtt:
       unique_id: "alpha_battery_status"
       state_topic: "HomeAssistant/MQTTSensor/BATTERY_STATUS"
       value_template: "{{ value | string }}"
-
+      device_class: "enum"
 
     - device_class: "voltage"
       state_class: "measurement"
@@ -318,6 +319,7 @@ mqtt:
       unique_id: "alpha_dispatch_start"
       state_topic: "HomeAssistant/MQTTSensor/REG_DISPATCH_RW_DISPATCH_START"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -326,6 +328,7 @@ mqtt:
       unique_id: "alpha_dispatch_mode"
       state_topic: "HomeAssistant/MQTTSensor/REG_DISPATCH_RW_DISPATCH_MODE"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - device_class: "battery"
       state_class: "measurement"
@@ -393,6 +396,7 @@ mqtt:
       unique_id: "alpha_system_fault"
       state_topic: "HomeAssistant/MQTTSensor/REG_SYSTEM_OP_R_SYSTEM_FAULT_1"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -401,6 +405,7 @@ mqtt:
       unique_id: "alpha_battery_fault"
       state_topic: "HomeAssistant/MQTTSensor/REG_BATTERY_HOME_R_BATTERY_FAULT_1"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - device_class: "energy"
       state_class: "measurement"
@@ -474,6 +479,7 @@ mqtt:
       unique_id: "alpha_dispatch_charge_response_status"
       state_topic: "HomeAssistant/MQTTSensor/CHARGE_RESPONSE_responseStatus"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -482,6 +488,7 @@ mqtt:
       unique_id: "alpha_dispatch_charge_failure_detail"
       state_topic: "HomeAssistant/MQTTSensor/CHARGE_RESPONSE_failureDetail"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -490,6 +497,7 @@ mqtt:
       unique_id: "alpha_dispatch_normal_response_status"
       state_topic: "HomeAssistant/MQTTSensor/NORMAL_RESPONSE_responseStatus"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -498,6 +506,7 @@ mqtt:
       unique_id: "alpha_dispatch_normal_failure_detail"
       state_topic: "HomeAssistant/MQTTSensor/NORMAL_RESPONSE_failureDetail"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -506,6 +515,7 @@ mqtt:
       unique_id: "alpha_dispatch_discharge_response_status"
       state_topic: "HomeAssistant/MQTTSensor/DISCHARGE_RESPONSE_responseStatus"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -514,7 +524,7 @@ mqtt:
       unique_id: "alpha_dispatch_discharge_failure_detail"
       state_topic: "HomeAssistant/MQTTSensor/DISCHARGE_RESPONSE_failureDetail"
       value_template: "{{ value | string }}"
-
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -523,6 +533,7 @@ mqtt:
       unique_id: "alpha_read_handled_register_response_status"
       state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_responseStatus"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -531,6 +542,7 @@ mqtt:
       unique_id: "alpha_read_handled_register_register_address"
       state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_registerAddress"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -547,6 +559,7 @@ mqtt:
       unique_id: "alpha_read_handled_register_register_name"
       state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_registerName"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -555,6 +568,7 @@ mqtt:
       unique_id: "alpha_read_handled_register_data_type"
       state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_dataType"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -571,6 +585,7 @@ mqtt:
       unique_id: "alpha_read_handled_register_formatted_data_value"
       state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_formattedDataValue"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -587,7 +602,7 @@ mqtt:
       unique_id: "alpha_read_handled_register_raw_data"
       state_topic: "HomeAssistant/MQTTSensor/READHANDLED_RESPONSE_rawData"
       value_template: "{{ value | string }}"
-
+      device_class: "enum"
 
 
     - state_class: "measurement"
@@ -597,6 +612,7 @@ mqtt:
       unique_id: "alpha_read_raw_register_response_status"
       state_topic: "HomeAssistant/MQTTSensor/READRAW_RESPONSE_responseStatus"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -605,6 +621,7 @@ mqtt:
       unique_id: "alpha_read_raw_register_register_address"
       state_topic: "HomeAssistant/MQTTSensor/READRAW_RESPONSE_registerAddress"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -629,7 +646,7 @@ mqtt:
       unique_id: "alpha_read_raw_register_raw_data"
       state_topic: "HomeAssistant/MQTTSensor/READRAW_RESPONSE_rawData"
       value_template: "{{ value | string }}"
-
+      device_class: "enum"
 
 
 
@@ -641,6 +658,7 @@ mqtt:
       unique_id: "alpha_write_raw_data_register_response_status"
       state_topic: "HomeAssistant/MQTTSensor/WRITERAW_RESPONSE_responseStatus"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -649,6 +667,7 @@ mqtt:
       unique_id: "alpha_write_raw_data_register_register_address"
       state_topic: "HomeAssistant/MQTTSensor/WRITERAW_RESPONSE_registerAddress"
       value_template: "{{ value | string }}"
+      device_class: "enum"
 
     - state_class: "measurement"
       force_update: "true"
@@ -673,7 +692,7 @@ mqtt:
       unique_id: "alpha_write_raw_data_register_raw_data"
       state_topic: "HomeAssistant/MQTTSensor/WRITERAW_RESPONSE_rawData"
       value_template: "{{ value | string }}"
-
+      device_class: "enum"
 
 
 

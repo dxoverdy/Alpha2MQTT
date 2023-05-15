@@ -1,0 +1,2 @@
+Home Assistant Changes
+configuration.yaml - Added device_class: "enum" to all string sensors to accommodate a Home Assistant change breaking them.
