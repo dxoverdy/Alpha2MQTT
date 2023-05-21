@@ -91,6 +91,12 @@ modbusRequestAndResponseStatusValues RS485Handler::sendModbus(uint8_t frame[], b
 
 	//Send
 	digitalWrite(SERIAL_COMMUNICATION_CONTROL_PIN, RS485_TX);
+
+	// Debug output the frame?
+#ifdef DEBUG_OUTPUT_TX_RX
+	outputFrameToSerial(true, frame, actualFrameSize);
+#endif
+
 	_RS485Serial->write(frame, actualFrameSize);
 
 	// It's important to reset the SERIAL_COMMUNICATION_CONTROL_PIN as soon as
@@ -101,8 +107,47 @@ modbusRequestAndResponseStatusValues RS485Handler::sendModbus(uint8_t frame[], b
 }
 
 
+/*
+outputFrameToSerial
+ 
+Outputs a transmitted or received frame (regardless of population) to assist with debugging.
+*/
+void RS485Handler::outputFrameToSerial(bool transmit, uint8_t frame[], byte actualFrameSize)
+{
+	//char debugOutput[200];
+	char debugByte[5];
 
 
+	_debugOutput[0] = '\0';
+	if (transmit)
+	{
+		strncat(_debugOutput, "Tx: ", 4);
+	}
+	else
+	{
+		strncat(_debugOutput, "Rx: ", 4);
+	}
+
+	if (actualFrameSize == 0)
+	{
+		strncat(_debugOutput, "Nothing", 7);
+	}
+	else
+	{
+		for (int counter = 0; counter < actualFrameSize; counter++)
+		{
+			sprintf(debugByte, "%02X", frame[counter]);
+			strncat(_debugOutput, debugByte, 2);
+			if (counter < actualFrameSize - 1)
+			{
+				strncat(_debugOutput, " ", 1);
+			}
+		}
+	}
+	//sprintf(_debugOutput, "%s", debugOutput);
+	Serial.println(_debugOutput);
+
+}
 
 
 
@@ -298,11 +343,18 @@ modbusRequestAndResponseStatusValues RS485Handler::listenResponse(modbusRequestA
 	}
 
 
+
+
 	// Check what to report back
 	if (inByteNumZeroIndexed == 0)
 	{
 		result = modbusRequestAndResponseStatusValues::noResponse;
 		strcpy(resp->statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_NO_RESPONSE_MQTT_DESC);
+
+		// Debug output the frame?
+#ifdef DEBUG_OUTPUT_TX_RX
+		outputFrameToSerial(false, inFrame, inByteNumZeroIndexed);
+#endif
 	}
 	else
 	{
@@ -326,6 +378,11 @@ modbusRequestAndResponseStatusValues RS485Handler::listenResponse(modbusRequestA
 			// Bring it back in line.
 			inByteNumZeroIndexed--;
 		}
+
+		// Debug output the frame?
+#ifdef DEBUG_OUTPUT_TX_RX
+		outputFrameToSerial(false, inFrame, inByteNumZeroIndexed);
+#endif
 
 		if (inByteNumZeroIndexed < MIN_FRAME_SIZE_ZERO_INDEXED)
 		{

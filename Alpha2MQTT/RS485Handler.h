@@ -43,6 +43,7 @@ class RS485Handler
 		void flushRS485();
 		modbusRequestAndResponseStatusValues listenResponse(modbusRequestAndResponse* resp);
 		bool checkForData();
+		void outputFrameToSerial(bool transmit, uint8_t frame[], byte actualFrameSize);
 
 	protected:
 

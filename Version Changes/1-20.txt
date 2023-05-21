@@ -1,0 +1,15 @@
+Code changes
+Added a definition DEBUG_OUTPUT_TX_RX which will output the actual raw frames sent and received by Alpha2MQTT.  As such, not subject to any handling or CRC checking so can assist in debugging where your device may receive bytes from Alpha2MQTT but they are not as expected.
+
+Example output when plugged into an Alpha:
+
+Tx: 55 03 04 33 00 02 38 E0
+Rx: 55 03 04 00 00 00 00 EF
+
+Tx: 55 03 08 80 00 01 8A 56
+Rx: 55 03 02 00 00 89
+
+Example output when not plugged into an Alpha:
+
+Tx: 55 03 08 80 00 01 8A 56
+Rx: Nothing

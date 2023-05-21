@@ -958,5 +958,5 @@ struct mqttState
 
 //#define DEBUG
 //#define DEBUG_LEVEL2 // For serial flooding action
-
+//#define DEBUG_OUTPUT_TX_RX
 #endif
