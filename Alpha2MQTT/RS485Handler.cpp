@@ -358,6 +358,11 @@ modbusRequestAndResponseStatusValues RS485Handler::listenResponse(modbusRequestA
 	}
 	else
 	{
+		// Debug output the frame?
+#ifdef DEBUG_OUTPUT_TX_RX
+		outputFrameToSerial(false, inFrame, inByteNumZeroIndexed);
+#endif
+
 		if (gotSlaveID && gotFunctionCode && gotData)
 		{
 			if (resp->functionCode != MODBUS_FN_READDATAREGISTER && resp->functionCode != MODBUS_FN_WRITEDATAREGISTER && resp->functionCode != MODBUS_FN_WRITESINGLEREGISTER)
@@ -379,10 +384,7 @@ modbusRequestAndResponseStatusValues RS485Handler::listenResponse(modbusRequestA
 			inByteNumZeroIndexed--;
 		}
 
-		// Debug output the frame?
-#ifdef DEBUG_OUTPUT_TX_RX
-		outputFrameToSerial(false, inFrame, inByteNumZeroIndexed);
-#endif
+
 
 		if (inByteNumZeroIndexed < MIN_FRAME_SIZE_ZERO_INDEXED)
 		{
