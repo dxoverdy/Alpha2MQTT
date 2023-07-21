@@ -21,6 +21,17 @@ Customise these options as per README.txt.  Please read README.txt before contin
 #endif
 
 
+// Compiling for ESP8266 or ESP32?
+//#define MP_ESP32
+#define MP_ESP8266
+#if (!defined MP_ESP8266) && (!defined MP_ESP32)
+#error You must specify the microprocessor in use
+#endif
+
+#if (defined MP_ESP8266) && (defined MP_ESP32)
+#error You must only select one microprocessor from the list
+#endif
+
 // Update these to match your inverter
 #define INVERTER_SMILE_B3				// Uncomment for SMILE-B3
 //#define INVERTER_SMILE5				// Uncomment for SMILE5
@@ -60,7 +71,7 @@ Customise these options as per README.txt.  Please read README.txt before contin
 
 
 // x 50mS to wait for RS485 input chars.  300ms as per Modbus documentation, but I got timeouts on that.  However 400ms works without issue
-#define RS485_TRIES 8
+#define RS485_TRIES 8 // 16
 
 // I beg to differ on this, I'd say it's more 0.396 based on my tests
 // However make it easily customisable here
@@ -956,7 +967,7 @@ struct mqttState
 
 
 
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_LEVEL2 // For serial flooding action
 //#define DEBUG_OUTPUT_TX_RX
 #endif

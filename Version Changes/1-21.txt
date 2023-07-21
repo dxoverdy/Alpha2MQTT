@@ -1,0 +1,48 @@
+Added ESP32 support.  NB, could not get working with an RS485 (blue module) or small factor 3.3V MAX3485.
+The MAX3485 (RED MODULE) works fine.  Still investigating why.
+All above combinations work on the ESP8266.
+
+To use ESP32 or ESP8266, comment/uncomment the relevant lines in Definitions.h
+//#define MP_ESP32
+#define MP_ESP8266
+
+
+Details about ESP32 Support
+If you are using the screen, pins are
+OLED		- ESP32
+Ground		- Ground
+3.3V		- 3.3V
+D1 (SCL)	- GPIO22 (SCL)
+D2 (SDA)	- GPIO21 (SDA)
+RST			- GPIO13
+
+If your OLED does not have RST, change the following line in Alpha2MQTT.ino
+#define OLED_RESET 13 // GPIO13
+to
+#define OLED_RESET -1 // No Reset
+
+
+MAX3485 (red module) pins are
+MAX3485		- ESP32
+Ground		- Ground
+3.3V		- 3.3V
+TXD			- GPIO16 (RX2)
+RXD			- GPIO17 (TX2)
+
+
+MAX485 (blue module) pins are
+MAX485		- ESP32
+Ground		- Ground
+5V			- 5V
+RO			- GPIO16 (RX2) (via voltage shifter, but may not be needed)
+DI			- GPIO17 (TX2) (via voltage shifter, but may not be needed)
+DE+RE		- GPIO33 (via voltage shifter, but may not be needed)
+
+Or mini form factor RS485 single chip
+Mini RS485	- ESP32
+Ground		- Ground
+3.3V		- 3.3V
+TX			- GPIO16 (RX2)
+RX			- GPIO17 (TX2)
+EN			- GPIO33
+

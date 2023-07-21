@@ -16,7 +16,11 @@ First, go and customise options at the top of Definitions.h!
 #include "RS485Handler.h"
 #include "Definitions.h"
 #include <Arduino.h>
+#if defined MP_ESP8266
 #include <ESP8266WiFi.h>
+#elif defined MP_ESP32
+#include <WiFi.h>
+#endif
 #include <PubSubClient.h>
 #include <SPI.h>
 #include <Wire.h>
@@ -24,7 +28,7 @@ First, go and customise options at the top of Definitions.h!
 #include <Adafruit_SSD1306.h>
 
 // Device parameters
-char _version[6] = "v1.20";
+char _version[6] = "v1.21";
 
 // WiFi parameters
 WiFiClient _wifi;
@@ -381,7 +385,12 @@ static struct mqttState _mqttAllHandledRegisters[] PROGMEM =
 #define UPDATE_STATUS_BAR_INTERVAL 500
 
 // Wemos OLED Shield set up. 64x48, pins D1 and D2
+#if defined MP_ESP8266
 #define OLED_RESET 0  // GPIO0
+#elif defined MP_ESP32
+#define OLED_RESET 13 // GPIO13
+#endif
+
 Adafruit_SSD1306 _display(OLED_RESET);
 
 
@@ -415,8 +424,22 @@ void setup()
 	// Half second wait to give things time to kick in
 	delay(500);
 
+#if defined MP_ESP32
+	pinMode(OLED_RESET, OUTPUT);
+	//Give a low to high pulse to the OLED display to reset it
+	//This is optional and not required for OLED modules not containing a reset pin
+#ifdef DEBUG
+	sprintf(_debugOutput, "Resetting pin 13");
+	Serial.println(_debugOutput);
+#endif
+	digitalWrite(OLED_RESET, LOW);
+	delay(300);
+#endif
+
 	// Turn on the OLED
+	digitalWrite(OLED_RESET, HIGH);
 	_display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize OLED with the I2C addr 0x3C (for the 64x48)
+	
 	_display.clearDisplay();
 	_display.display();
 	updateOLED(false, "", "", _version);

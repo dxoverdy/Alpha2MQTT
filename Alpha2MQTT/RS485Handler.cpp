@@ -23,10 +23,14 @@ RS485Handler::RS485Handler()
 	pinMode(SERIAL_COMMUNICATION_CONTROL_PIN, OUTPUT);
 
 	// Set pin 'LOW' for 'Receive' mode
-	digitalWrite(SERIAL_COMMUNICATION_CONTROL_PIN, RS485_RX);
+	//digitalWrite(SERIAL_COMMUNICATION_CONTROL_PIN, RS485_RX);
 
+#if defined MP_ESP8266
 	_RS485Serial = new SoftwareSerial(RX_PIN, TX_PIN);
-	_RS485Serial->begin(INVERTER_BAUD_RATE);
+#elif defined MP_ESP32
+	_RS485Serial = new HardwareSerial(2); // Serial 2 PIN16=RXgreen, pin17=TXwhite
+#endif
+	_RS485Serial->begin(INVERTER_BAUD_RATE, SERIAL_8N1);
 }
 
 /*
@@ -66,7 +70,7 @@ void RS485Handler::flushRS485()
 	_RS485Serial->flush();
 	
 	// Not sure the delay needed.
-	//delay(200);
+	delay(50);
 
 	while (_RS485Serial->available())
 	{
@@ -101,8 +105,10 @@ modbusRequestAndResponseStatusValues RS485Handler::sendModbus(uint8_t frame[], b
 
 	// It's important to reset the SERIAL_COMMUNICATION_CONTROL_PIN as soon as
 	// we finish sending so that the serial port can start to buffer the response.
-	digitalWrite(SERIAL_COMMUNICATION_CONTROL_PIN, RS485_RX);
 
+	digitalWrite(SERIAL_COMMUNICATION_CONTROL_PIN, RS485_RX);
+	
+	delay(100);
 	return listenResponse(resp);
 }
 
