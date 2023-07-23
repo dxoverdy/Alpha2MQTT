@@ -44,7 +44,7 @@ Customise these options as per README.txt.  Please read README.txt before contin
 
 // Update with your Wifi details
 #define WIFI_SSID		"Stardust"
-#define WIFI_PASSWORD	"Sniegulinka1983"
+#define WIFI_PASSWORD	""
 
 // Update with your MQTT Broker details
 #define MQTT_SERVER	"192.168.1.135"
