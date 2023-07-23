@@ -28,7 +28,7 @@ First, go and customise options at the top of Definitions.h!
 #include <Adafruit_SSD1306.h>
 
 // Device parameters
-char _version[6] = "v1.21";
+char _version[6] = "v1.22";
 
 // WiFi parameters
 WiFiClient _wifi;
@@ -375,7 +375,6 @@ static struct mqttState _mqttAllHandledRegisters[] PROGMEM =
 
 
 // These timers are used in the main loop.
-#define HEARTBEAT_INTERVAL 9000
 #define RUNSTATE_INTERVAL 5000
 #define STATUS_INTERVAL_TEN_SECONDS 10000
 #define STATUS_INTERVAL_ONE_MINUTE 60000
@@ -384,11 +383,17 @@ static struct mqttState _mqttAllHandledRegisters[] PROGMEM =
 #define STATUS_INTERVAL_ONE_DAY 86400000
 #define UPDATE_STATUS_BAR_INTERVAL 500
 
-// Wemos OLED Shield set up. 64x48, pins D1 and D2
+// Wemos OLED Shield set up. 64x48
+// Pins D1 D2 if ESP8266
+// Pins GPIO22 and GPIO21 (SCL/SDA) with optional reset on GPIO13 if ESP32
 #if defined MP_ESP8266
 #define OLED_RESET 0  // GPIO0
 #elif defined MP_ESP32
+#if OLED_HAS_RST_PIN
 #define OLED_RESET 13 // GPIO13
+#else
+#define OLED_RESET -1 // No RESET Pin
+#endif
 #endif
 
 Adafruit_SSD1306 _display(OLED_RESET);
@@ -403,6 +408,18 @@ The setup function runs once when you press reset or power the board
 */
 void setup()
 {
+
+	// All for testing different baud rates to 'wake up' the inverter
+	unsigned long knownBaudRates[5] = { 38400, 19200, 14400, 9600, 4800 };
+	bool gotResponse = false;
+	modbusRequestAndResponseStatusValues result = modbusRequestAndResponseStatusValues::preProcessing;
+	modbusRequestAndResponse response;
+	char baudRateString[10] = "";
+	int baudRateIterator = -1;
+	bool firstCheck = true;
+
+
+
 	// Set up serial for debugging using an appropriate baud rate
 	// This is for communication with the development environment, NOT the Alpha system
 	// See Definitions.h for this.
@@ -412,37 +429,28 @@ void setup()
 	// Configure LED for output
 	pinMode(LED_BUILTIN, OUTPUT);
 
-
-	// Set up the software serial for communicating with the MAX
-	_modBus = new RS485Handler;
-	_modBus->setDebugOutput(_debugOutput);
-	
-
-	// Set up the helper class for reading with reading registers
-	_registerHandler = new RegisterHandler(_modBus);
-
-	// Half second wait to give things time to kick in
-	delay(500);
-
+	// Display time
 #if defined MP_ESP32
 	pinMode(OLED_RESET, OUTPUT);
 	//Give a low to high pulse to the OLED display to reset it
 	//This is optional and not required for OLED modules not containing a reset pin
-#ifdef DEBUG
-	sprintf(_debugOutput, "Resetting pin 13");
-	Serial.println(_debugOutput);
-#endif
 	digitalWrite(OLED_RESET, LOW);
-	delay(300);
+	delay(50);
 #endif
 
 	// Turn on the OLED
 	digitalWrite(OLED_RESET, HIGH);
 	_display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize OLED with the I2C addr 0x3C (for the 64x48)
-	
+
 	_display.clearDisplay();
 	_display.display();
 	updateOLED(false, "", "", _version);
+
+
+
+	// Bit of a delay to give things time to kick in
+	delay(100);
+
 
 	// Configure WIFI
 	setupWifi();
@@ -488,11 +496,69 @@ void setup()
 	// And any messages we are subscribed to will be pushed to the mqttCallback function for processing
 	_mqtt.setCallback(mqttCallback);
 
+
+
+
+	// Set up the serial for communicating with the MAX
+	_modBus = new RS485Handler;
+	_modBus->setDebugOutput(_debugOutput);
+
+	// Set up the helper class for reading with reading registers
+	_registerHandler = new RegisterHandler(_modBus);
+
+	// Iterate known baud rates until we find a success
+	while (!gotResponse)
+	{
+		// Starts at -1, so increment to 0 for example
+		baudRateIterator++;
+
+		// Go back to zero if beyond the bounds
+		if (baudRateIterator > (sizeof(knownBaudRates) / sizeof(knownBaudRates[0])) - 1)
+		{
+			baudRateIterator = 0;
+		}
+
+		// Update the display
+		sprintf(baudRateString, "%u", knownBaudRates[baudRateIterator]);
+
+		updateOLED(false, "Test Baud", baudRateString, "");
+#ifdef DEBUG
+		sprintf(_debugOutput, "About To Try: %u", knownBaudRates[baudRateIterator]);
+		Serial.println(_debugOutput);
+#endif
+		// Set the rate
+		_modBus->setBaudRate(knownBaudRates[baudRateIterator]);
+
+		// Ask for a reading
+		result = _registerHandler->readHandledRegister(REG_SAFETY_TEST_RW_GRID_REGULATION, &response);
+		if (result != modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+		{
+#ifdef DEBUG
+			sprintf(_debugOutput, "Baud Rate Checker Problem: %s", response.statusMqttMessage);
+			Serial.println(_debugOutput);
+#endif
+			updateOLED(false, "Test Baud", baudRateString, response.displayMessage);
+
+			// Delay a while before trying the next
+			delay(1000);
+		}
+		else
+		{
+			// If successful, drop out of here
+			// Excellent, baud rate is set in the class, we got a response.. get out of here
+			gotResponse = true;
+		}
+	}
+
+
+
+
+
+
+
+
 	// Get the serial number (especially prefix for error codes)
 	getSerialNumber();
-
-	// Wake up the inverter - Probably not needed but will keep in
-	heartbeat();
 
 	// Connect to MQTT
 	mqttReconnect();
@@ -526,9 +592,6 @@ void loop()
 	{
 		mqttReconnect();
 	}
-
-	// Send a heartbeat to keep the inverter awake
-	heartbeat();
 
 	// Check and display the runstate on the display
 	updateRunstate();
@@ -731,47 +794,6 @@ void updateOLED(bool justStatus, const char* line2, const char* line3, const cha
 
 
 
-/*
-heartbeat
-
-Attemps to keep the inverter awake and flahes the LED on the circuit board to indicate stuff still happening
-I don't believe AlphaESS systems need any sort of heartbeat/keepalive, however, the cost is rather insignificant
-so it can stay in.
-*/
-void heartbeat()
-{
-	static unsigned long lastRun = 0;
-	modbusRequestAndResponseStatusValues result = modbusRequestAndResponseStatusValues::preProcessing;
-	modbusRequestAndResponse response;
-
-	// Send a heartbeat if the approprivate interval has passed since last time
-	if (checkTimer(&lastRun, HEARTBEAT_INTERVAL))
-	{
-		// Read any register
-		result = _registerHandler->readHandledRegister(REG_SAFETY_TEST_RW_GRID_REGULATION, &response);
-
-		if (result != modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
-		{
-#ifdef DEBUG
-			sprintf(_debugOutput, "Bad heartbeat: %s", response.statusMqttMessage);
-			Serial.println(_debugOutput);
-#endif
-			updateOLED(false, "", "", "BAD-CRC-HB");
-		}
-
-		//Flash the LED
-		digitalWrite(LED_BUILTIN, LOW);
-		delay(4);
-		digitalWrite(LED_BUILTIN, HIGH);
-	}
-}
-
-
-
-
-
-
-
 
 /*
 getSerialNumber
@@ -844,6 +866,12 @@ void updateRunstate()
 
 	if (checkTimer(&lastRun, RUNSTATE_INTERVAL))
 	{
+		//Flash the LED
+		digitalWrite(LED_BUILTIN, LOW);
+		delay(4);
+		digitalWrite(LED_BUILTIN, HIGH);
+
+
 		// Get Dispatch Start - Is Alpha2MQTT controlling the inverter?
 		request = _registerHandler->readHandledRegister(REG_DISPATCH_RW_DISPATCH_START, &response);
 		if (request == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
@@ -914,7 +942,7 @@ void updateRunstate()
 #ifdef DEBUG
 			Serial.println(response.statusMqttMessage);
 #endif
-			updateOLED(false, "", "", "BAD-CRC-UR");
+			updateOLED(false, "", "", response.displayMessage);
 		}
 	}
 }

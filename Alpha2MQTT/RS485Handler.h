@@ -32,7 +32,7 @@ Handles Modbus requests and responses in a tidy class separate from main program
 
 #define RS485_TX HIGH						// Transmit control pin goes high
 #define RS485_RX LOW						// Receive control pin goes low
-
+#define DEFAULT_BAUD_RATE 9600				// Just a default, Alpha2MQTT will cycle baud rates until one is found
 
 #if defined MP_ESP8266
 #define SERIAL_COMMUNICATION_CONTROL_PIN D5	// Transmission set pin
@@ -59,6 +59,7 @@ class RS485Handler
 		modbusRequestAndResponseStatusValues listenResponse(modbusRequestAndResponse* resp);
 		bool checkForData();
 		void outputFrameToSerial(bool transmit, uint8_t frame[], byte actualFrameSize);
+		uint16_t baudRate;
 
 	protected:
 
@@ -70,6 +71,7 @@ class RS485Handler
 		bool checkCRC(uint8_t frame[], byte actualFrameSize);
 		void calcCRC(uint8_t frame[], byte actualFrameSize);
 		void setDebugOutput(char* _db);
+		void setBaudRate(unsigned long baudRate);
 };
 
 

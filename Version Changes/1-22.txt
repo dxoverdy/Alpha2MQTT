@@ -1,0 +1,10 @@
+v1.22
+
+ESP32 support for MAX485, MAX3485 and the 3.3V/5V red module containing at MAX13847E now confirmed.
+
+There is now no longer the need to specify a baud rate or inverter.  Alpha2MQTT will iterate through all known baud-rates on boot and once communication established, will use that baud rate going forward.
+
+Based on V1.21, if you use an OLED screen which doesn't have an RST solder point or switch, please clear OLED_HAS_RST_PIN in Definitions.h to false.  If you use an OLED shield for an ESP8266 or the OLED display otherwise has an RST pin, set this to true.
+
+
+

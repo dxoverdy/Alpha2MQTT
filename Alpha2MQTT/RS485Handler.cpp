@@ -27,10 +27,12 @@ RS485Handler::RS485Handler()
 
 #if defined MP_ESP8266
 	_RS485Serial = new SoftwareSerial(RX_PIN, TX_PIN);
+	_RS485Serial->begin(DEFAULT_BAUD_RATE, SWSERIAL_8N1);
 #elif defined MP_ESP32
 	_RS485Serial = new HardwareSerial(2); // Serial 2 PIN16=RXgreen, pin17=TXwhite
+	_RS485Serial->begin(DEFAULT_BAUD_RATE, SERIAL_8N1);
 #endif
-	_RS485Serial->begin(INVERTER_BAUD_RATE, SERIAL_8N1);
+	
 }
 
 /*
@@ -45,6 +47,17 @@ RS485Handler::~RS485Handler()
 	_RS485Serial = NULL;
 }
 
+
+/*
+setBaudRate()
+
+Sets the baud rate for communication
+*/
+void RS485Handler::setBaudRate(unsigned long baudRate)
+{
+	_RS485Serial->flush();
+	_RS485Serial->begin(baudRate);
+}
 
 
 /*
@@ -70,7 +83,7 @@ void RS485Handler::flushRS485()
 	_RS485Serial->flush();
 	
 	// Not sure the delay needed.
-	delay(50);
+	//delay(50);
 
 	while (_RS485Serial->available())
 	{
@@ -102,13 +115,14 @@ modbusRequestAndResponseStatusValues RS485Handler::sendModbus(uint8_t frame[], b
 #endif
 
 	_RS485Serial->write(frame, actualFrameSize);
+	// Ensure it's sent on its way.
+	_RS485Serial->flush();
 
 	// It's important to reset the SERIAL_COMMUNICATION_CONTROL_PIN as soon as
 	// we finish sending so that the serial port can start to buffer the response.
 
 	digitalWrite(SERIAL_COMMUNICATION_CONTROL_PIN, RS485_RX);
 	
-	delay(100);
 	return listenResponse(resp);
 }
 
@@ -356,6 +370,7 @@ modbusRequestAndResponseStatusValues RS485Handler::listenResponse(modbusRequestA
 	{
 		result = modbusRequestAndResponseStatusValues::noResponse;
 		strcpy(resp->statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_NO_RESPONSE_MQTT_DESC);
+		strcpy(resp->displayMessage, MODBUS_REQUEST_AND_RESPONSE_NO_RESPONSE_DISPLAY_DESC);
 
 		// Debug output the frame?
 #ifdef DEBUG_OUTPUT_TX_RX
@@ -396,6 +411,7 @@ modbusRequestAndResponseStatusValues RS485Handler::listenResponse(modbusRequestA
 		{
 			result = modbusRequestAndResponseStatusValues::responseTooShort;
 			strcpy(resp->statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_RESPONSE_TOO_SHORT_MQTT_DESC);
+			strcpy(resp->displayMessage, MODBUS_REQUEST_AND_RESPONSE_RESPONSE_TOO_SHORT_DISPLAY_DESC);
 		}
 		else if (checkCRC(inFrame, inByteNumZeroIndexed + 1))
 		{
@@ -403,27 +419,32 @@ modbusRequestAndResponseStatusValues RS485Handler::listenResponse(modbusRequestA
 			{
 				result = modbusRequestAndResponseStatusValues::writeDataRegisterSuccess;
 				strcpy(resp->statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_WRITE_DATA_REGISTER_SUCCESS_MQTT_DESC);
+				strcpy(resp->displayMessage, MODBUS_REQUEST_AND_RESPONSE_WRITE_DATA_REGISTER_SUCCESS_DISPLAY_DESC);
 			}
 			else if (resp->functionCode == MODBUS_FN_WRITESINGLEREGISTER)
 			{
 				result = modbusRequestAndResponseStatusValues::writeSingleRegisterSuccess;
 				strcpy(resp->statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_WRITE_SINGLE_REGISTER_SUCCESS_MQTT_DESC);
+				strcpy(resp->displayMessage, MODBUS_REQUEST_AND_RESPONSE_WRITE_SINGLE_REGISTER_SUCCESS_DISPLAY_DESC);
 			}
 			else if (resp->functionCode == MODBUS_FN_READDATAREGISTER)
 			{
 				result = modbusRequestAndResponseStatusValues::readDataRegisterSuccess;
 				strcpy(resp->statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_READ_DATA_REGISTER_SUCCESS_MQTT_DESC);
+				strcpy(resp->displayMessage, MODBUS_REQUEST_AND_RESPONSE_READ_DATA_REGISTER_SUCCESS_DISPLAY_DESC);
 			}
 			else
 			{
 				result = modbusRequestAndResponseStatusValues::slaveError;
 				strcpy(resp->statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_ERROR_MQTT_DESC);
+				strcpy(resp->displayMessage, MODBUS_REQUEST_AND_RESPONSE_ERROR_DISPLAY_DESC);
 			}
 		}
 		else
 		{
 			result = modbusRequestAndResponseStatusValues::invalidFrame;
 			strcpy(resp->statusMqttMessage, MODBUS_REQUEST_AND_RESPONSE_INVALID_FRAME_MQTT_DESC);
+			strcpy(resp->displayMessage, MODBUS_REQUEST_AND_RESPONSE_INVALID_FRAME_DISPLAY_DESC);
 		}
 	}
 	

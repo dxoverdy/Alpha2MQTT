@@ -22,8 +22,8 @@ Customise these options as per README.txt.  Please read README.txt before contin
 
 
 // Compiling for ESP8266 or ESP32?
-//#define MP_ESP32
-#define MP_ESP8266
+#define MP_ESP32
+//#define MP_ESP8266
 #if (!defined MP_ESP8266) && (!defined MP_ESP32)
 #error You must specify the microprocessor in use
 #endif
@@ -33,7 +33,7 @@ Customise these options as per README.txt.  Please read README.txt before contin
 #endif
 
 // Update these to match your inverter
-#define INVERTER_SMILE_B3				// Uncomment for SMILE-B3
+//#define INVERTER_SMILE_B3				// Uncomment for SMILE-B3
 //#define INVERTER_SMILE5				// Uncomment for SMILE5
 //#define INVERTER_SMILE_T10			// Uncomment for SMILE-T10
 //#define INVERTER_STORION_T30			// Uncomment for STORION T30
@@ -44,7 +44,7 @@ Customise these options as per README.txt.  Please read README.txt before contin
 
 // Update with your Wifi details
 #define WIFI_SSID		"Stardust"
-#define WIFI_PASSWORD	""
+#define WIFI_PASSWORD	"Sniegulinka1983"
 
 // Update with your MQTT Broker details
 #define MQTT_SERVER	"192.168.1.135"
@@ -55,6 +55,11 @@ Customise these options as per README.txt.  Please read README.txt before contin
 // The device name is used as the MQTT base topic and presence on the network.
 // If you need more than one Alpha2MQTT on your network, give them unique names.
 #define DEVICE_NAME "Alpha2MQTT"
+
+// If your OLED doesn't have an RST pin, set this to true.
+// An OLED Shield compatible with an ESP8266 does have a RESET pin and it is linked to GPIO0 if using an ESP8266.
+// If you are using the same OLED Shield with an ESP32, by default for this project it is linked to GIO13.
+#define OLED_HAS_RST_PIN true
 
 // Default address of inverter is 0x55 as per Alpha Modbus documentation.  If you have altered it, reflect that change here.
 #define ALPHA_SLAVE_ID 0x55
@@ -85,21 +90,10 @@ Customise these options as per README.txt.  Please read README.txt before contin
 #define FORCE_RESTART_HOURS 49
 
 
-#if (!defined INVERTER_SMILE_B3) && (!defined INVERTER_SMILE5) && (!defined INVERTER_SMILE_T10) && (!defined INVERTER_STORION_T30)
-#error You must specify the inverter type.
-#endif
+//#if (!defined INVERTER_SMILE_B3) && (!defined INVERTER_SMILE5) && (!defined INVERTER_SMILE_T10) && (!defined INVERTER_STORION_T30)
+//#error You must specify the inverter type.
+//#endif
 
-
-
-#ifdef INVERTER_SMILE_B3
-#define INVERTER_BAUD_RATE 9600		// SMILE-B3 is 9600 as per Modbus documentation
-#elif defined INVERTER_SMILE5
-#define INVERTER_BAUD_RATE 9600		// SMILE5 is 9600 as per Modbus documentation
-#elif defined INVERTER_SMILE_T10
-#define INVERTER_BAUD_RATE 9600		// SMILE5-T10 is 9600 as per Modbus documentation
-#elif defined INVERTER_STORION_T30
-#define INVERTER_BAUD_RATE 19200	// SMILE5-T10 is 19200 as per Modbus documentation
-#endif
 
 
 
@@ -916,7 +910,26 @@ enum modbusRequestAndResponseStatusValues
 #define MODBUS_REQUEST_AND_RESPONSE_SET_NORMAL_SUCCESS_MQTT_DESC "setNormalSuccess"
 #define MODBUS_REQUEST_AND_RESPONSE_PAYLOAD_EXCEEDED_CAPACITY_MQTT_DESC "payloadExceededCapacity"
 #define MODBUS_REQUEST_AND_RESPONSE_ADDED_TO_PAYLOAD_MQTT_DESC "addedToPayload"
-#define MODBUS_REQUEST_AND_RESPONSE_NOT_VALID_INCOMING_TOPIC_DESC "notValidIncomingTopic"
+#define MODBUS_REQUEST_AND_RESPONSE_NOT_VALID_INCOMING_TOPIC_MQTT_DESC "notValidIncomingTopic"
+
+
+#define MODBUS_REQUEST_AND_RESPONSE_PREPROCESSING_DISPLAY_DESC "PRE-PROC"
+#define MODBUS_REQUEST_AND_RESPONSE_NOT_HANDLED_REGISTER_DISPLAY_DESC "NOT-HANDL"
+#define MODBUS_REQUEST_AND_RESPONSE_INVALID_FRAME_DISPLAY_DESC "RSP-BADCRC"
+#define MODBUS_REQUEST_AND_RESPONSE_RESPONSE_TOO_SHORT_DISPLAY_DESC "RSP-SHORT"
+#define MODBUS_REQUEST_AND_RESPONSE_NO_RESPONSE_DISPLAY_DESC "NO-RSP"
+#define MODBUS_REQUEST_AND_RESPONSE_NO_DISPLAY_PAYLOAD_DISPLAY_DESC "NO-PAYLOAD"
+#define MODBUS_REQUEST_AND_RESPONSE_INVALID_DISPLAY_PAYLOAD_DISPLAY_DESC "INV-PAYLOA"
+#define MODBUS_REQUEST_AND_RESPONSE_WRITE_SINGLE_REGISTER_SUCCESS_DISPLAY_DESC "W-SR-SUC"
+#define MODBUS_REQUEST_AND_RESPONSE_WRITE_DATA_REGISTER_SUCCESS_DISPLAY_DESC "W-DR-SUC"
+#define MODBUS_REQUEST_AND_RESPONSE_READ_DATA_REGISTER_SUCCESS_DISPLAY_DESC "R-DR-SUC"
+#define MODBUS_REQUEST_AND_RESPONSE_ERROR_DISPLAY_DESC "SLA-ERROR"
+#define MODBUS_REQUEST_AND_RESPONSE_SET_DISCHARGE_SUCCESS_DISPLAY_DESC "SET-DI-SUC"
+#define MODBUS_REQUEST_AND_RESPONSE_SET_CHARGE_SUCCESS_DISPLAY_DESC "SET-CH-SUC"
+#define MODBUS_REQUEST_AND_RESPONSE_SET_NORMAL_SUCCESS_DISPLAY_DESC "SET-NO-SUC"
+#define MODBUS_REQUEST_AND_RESPONSE_PAYLOAD_EXCEEDED_CAPACITY_DISPLAY_DESC "PAYLOAD-ER"
+#define MODBUS_REQUEST_AND_RESPONSE_ADDED_TO_PAYLOAD_DISPLAY_DESC "ADDED-PAYL"
+#define MODBUS_REQUEST_AND_RESPONSE_NOT_VALID_INCOMING_TOPIC_DISPLAY_DESC "notValidIncomingTopic"
 
 #define MAX_CHARACTER_VALUE_LENGTH 21
 #define MAX_MQTT_NAME_LENGTH 81
@@ -937,9 +950,8 @@ struct modbusRequestAndResponse
 	uint8_t dataSize = 0;
 	uint8_t functionCode = 0;
 
-	//const char* statusMessage = MODBUS_REQUEST_AND_RESPONSE_PREPROCESSING_DESC;
-	//const char* statusDisplayMessage = MODBUS_REQUEST_AND_RESPONSE_PREPROCESSING_DISPLAY_DESC;
 	char statusMqttMessage[MAX_MQTT_STATUS_LENGTH] = MODBUS_REQUEST_AND_RESPONSE_PREPROCESSING_MQTT_DESC;
+	char displayMessage[OLED_CHARACTER_WIDTH] = MODBUS_REQUEST_AND_RESPONSE_PREPROCESSING_DISPLAY_DESC;
 
 	// These variables will be set by the sending process
 	char mqttName[MAX_MQTT_NAME_LENGTH] = "";
