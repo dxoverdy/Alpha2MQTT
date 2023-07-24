@@ -487,7 +487,7 @@ bool RS485Handler::checkCRC(uint8_t frame[], byte actualFrameSize)
 	calcCRC(frame, actualFrameSize);
 	calculated_crc = ((frame[actualFrameSize - 2] << 8) | frame[actualFrameSize - 1]);
 
-	return (received_crc = calculated_crc);
+	return (received_crc == calculated_crc);
 }
 
 
