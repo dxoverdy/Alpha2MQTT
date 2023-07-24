@@ -22,8 +22,8 @@ Customise these options as per README.txt.  Please read README.txt before contin
 
 
 // Compiling for ESP8266 or ESP32?
-#define MP_ESP32
-//#define MP_ESP8266
+//#define MP_ESP32
+#define MP_ESP8266
 #if (!defined MP_ESP8266) && (!defined MP_ESP32)
 #error You must specify the microprocessor in use
 #endif
@@ -59,7 +59,7 @@ Customise these options as per README.txt.  Please read README.txt before contin
 // If your OLED doesn't have an RST pin, set this to true.
 // An OLED Shield compatible with an ESP8266 does have a RESET pin and it is linked to GPIO0 if using an ESP8266.
 // If you are using the same OLED Shield with an ESP32, by default for this project it is linked to GIO13.
-#define OLED_HAS_RST_PIN true
+//#define OLED_HAS_RST_PIN true
 
 // Default address of inverter is 0x55 as per Alpha Modbus documentation.  If you have altered it, reflect that change here.
 #define ALPHA_SLAVE_ID 0x55

@@ -1,0 +1,6 @@
+v1.23
+
+Display code tidied up.  There is no longer any need to worry about an OLED Reset Pin.
+Extra documentation regarding ESP32 added to main README.md
+
+

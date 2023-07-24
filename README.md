@@ -29,7 +29,7 @@ It allows full remote control of the inverter (i.e. forcibly charge the battery 
 
 Communication with Alpha2MQTT is via MQTT and can be driven by home integration solutions such as [Home Assistant](https://www.home-assistant.io/), [Node-Red](https://nodered.org/) and anything else which is MQTT compatible.
 
-It's designed to run on an ESP8266 microcontroller (it was developed on a Wemos D1 mini) with a TTL to RS485 module such as the MAX3485.
+It's designed to run on an ESP8266 or ESP32 microcontroller (it was developed on a Wemos D1 mini) with a TTL to RS485 module such as the MAX3485.
 
 Alpha2MQTT honours 1.23 AlphaESS Modbus documentation:
 
@@ -564,7 +564,7 @@ calcCRC by angelo.compagnucci@gmail.com and jpmzometa@gmail.com
 
 # How To Build
 ## Parts List
-1. ESP8266 Microcontroller
+1. ESP8266 or ESP32 Microcontroller
 
 2. MAX3485 or MAX485 TTL to RS485 board*
 
@@ -609,15 +609,35 @@ For wire I suggest you strip a standard network cable and use wires from that.  
 
 ![WiringDiagramMAX485](Pics/MAX485Circuit.PNG)
 
+D5 is the serial control pin for devices with DR and RE flow control pins, or devices with an EN flow control pin.  If using devices with DR and RE pins, connect them both to D5.
+
 D6 is the receiving pin on the D1 mini.  It connects to the transmitting TXD pin on the 3845 or RO on the 845.
 
 D7 is the transmitting pin on the D1 mini.  It connects to the receiving RXD pin on the 3845 or DI on the 845.
 
-If using the 845, make sure you connect the DR and RE pins together.
+If using the 845, you may want to invest in a 3.3V -> 5V bi directional logic shifter in-between D5, D6 and D7 so that output from those pins is lifted to 5V to be in tolerance of the 845 and likewise, 5V reduced back to 3.3V for input.  If you do use a logic shifter 5V would be used to power the 845, not 3.3V. 
 
 Use long pinned headers on your ESP8266 (D1 mini) if you are stacking the optional OLED on top. Trim the legs so they fit comfortably into the sockets on the circuit board below.
 
 I don't recommend soldering the anything permenantly to the prototyping board, besides headers and wiring.  This way, if you want to transfer the boards elsewhere it is just a case of unplugging them.
+
+
+If you are using an ESP32, I am going to assume you are a little more advanced and just provide you with pin mappings below:
+
+Display to ESP32
+3.3v to 3.3v
+GND to GND
+SCL to SCL (GPIO22)
+SDA to SDA (GPIO21)
+
+MAX to ESP32
+3.3v to 3.3v
+GND to GND
+RX to TX2 (GPIO17)
+TX to RX2 (GPIO16)
+EN to GPIO33 (for devices with an EN flow control pin)
+DR+RE to GPIO33 (for devices with DR and RE flow control pins)
+
 
 Here's how it looks when completed.  I ended up using an RJ45 socket and soldered the appropriate pair directly to the MAX3845 RX and TX pins so that I could simply plug/unplug the ethernet cable, without needing to unscrew/screw terminals on the MAX3845 every time.
 

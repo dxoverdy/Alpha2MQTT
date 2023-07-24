@@ -386,17 +386,7 @@ static struct mqttState _mqttAllHandledRegisters[] PROGMEM =
 // Wemos OLED Shield set up. 64x48
 // Pins D1 D2 if ESP8266
 // Pins GPIO22 and GPIO21 (SCL/SDA) with optional reset on GPIO13 if ESP32
-#if defined MP_ESP8266
-#define OLED_RESET 0  // GPIO0
-#elif defined MP_ESP32
-#if OLED_HAS_RST_PIN
-#define OLED_RESET 13 // GPIO13
-#else
-#define OLED_RESET -1 // No RESET Pin
-#endif
-#endif
-
-Adafruit_SSD1306 _display(OLED_RESET);
+Adafruit_SSD1306 _display(-1); // No RESET Pin
 
 
 
@@ -428,20 +418,9 @@ void setup()
 
 	// Configure LED for output
 	pinMode(LED_BUILTIN, OUTPUT);
-
+	
 	// Display time
-#if defined MP_ESP32
-	pinMode(OLED_RESET, OUTPUT);
-	//Give a low to high pulse to the OLED display to reset it
-	//This is optional and not required for OLED modules not containing a reset pin
-	digitalWrite(OLED_RESET, LOW);
-	delay(50);
-#endif
-
-	// Turn on the OLED
-	digitalWrite(OLED_RESET, HIGH);
 	_display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize OLED with the I2C addr 0x3C (for the 64x48)
-
 	_display.clearDisplay();
 	_display.display();
 	updateOLED(false, "", "", _version);
@@ -544,18 +523,10 @@ void setup()
 		}
 		else
 		{
-			// If successful, drop out of here
 			// Excellent, baud rate is set in the class, we got a response.. get out of here
 			gotResponse = true;
 		}
 	}
-
-
-
-
-
-
-
 
 	// Get the serial number (especially prefix for error codes)
 	getSerialNumber();
