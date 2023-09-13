@@ -28,7 +28,7 @@ First, go and customise options at the top of Definitions.h!
 #include <Adafruit_SSD1306.h>
 
 // Device parameters
-char _version[6] = "v1.22";
+char _version[6] = "v1.24";
 
 // WiFi parameters
 WiFiClient _wifi;
@@ -400,7 +400,7 @@ void setup()
 {
 
 	// All for testing different baud rates to 'wake up' the inverter
-	unsigned long knownBaudRates[5] = { 38400, 19200, 14400, 9600, 4800 };
+	unsigned long knownBaudRates[7] = { 115200, 57600, 38400, 19200, 14400, 9600, 4800 };
 	bool gotResponse = false;
 	modbusRequestAndResponseStatusValues result = modbusRequestAndResponseStatusValues::preProcessing;
 	modbusRequestAndResponse response;

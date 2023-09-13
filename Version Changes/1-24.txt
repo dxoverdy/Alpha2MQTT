@@ -1,0 +1,12 @@
+v1.24
+
+Stubborn Smile 5 Updates
+
+I have liaised now with a few folk who have had troublesome Smile 5s that won't communicate.
+
+The following tips and tricks have come back
+	- Some Smile 5s work at 115200 baud rate.  So as of 1.24, 115200 has been included in the list of baud rates which are tried on bootup.
+	- Ground is recommended between the Smile 5 and MAX3485 - This is PIN 3 of the RJ45 (Green+White)  So try to link that up too.
+	- Some Smile 5s are 'woken up' (insert reason here) when primed with different baud rates and then ultimately settle on 9600, hence why Alpha2MQTT now loops from fastest to slowest.
+
+

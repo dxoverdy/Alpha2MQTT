@@ -803,3 +803,15 @@ DS from UK - Used his Alpha2MQTT together with a self-build ePaper device to rep
 MK from AU - Very much a minimalist build, but demonstrates that just two cheap components can get a unit up and running!
 
 ![Alpha2MQTT](Pics/MK.png)
+
+
+DC from UK - Built using an ESP32!  Thanks for your input regardings stubborn Smile 5 debugging!
+
+![Alpha2MQTT](Pics/dc1.jpg)
+![Alpha2MQTT](Pics/dc2.jpg)
+![Alpha2MQTT](Pics/dc3.jpg)
+
+
+DM from UK!
+
+![Alpha2MQTT](Pics/dm.jpg)
