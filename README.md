@@ -4,18 +4,14 @@
 _**NEW!** For a complete accompanying guide to integrating your Alpha2MQTT with Home Assistant on a Raspberry Pi or Virtual Machine, check [here](https://github.com/dxoverdy/Integrating-Alpha2MQTT-with-Home-Assistant)._
 
 ### Supported devices are:
+```
 SMILE5,
-
 SMILE-B3,
-
 SMILE-T10,
-
 Storion T30,
-
 SMILE-B3-PLUS (Confirmed by a user of Alpha2MQTT.)
-
 *Others are likely to work too.
-
+```
 ![Alpha2MQTT](Pics/Normal.jpg)
 
 
@@ -783,35 +779,50 @@ During WiFi Connection and MQTT Connection phases, line 4 shows the Alpha2MQTT s
 ### Alpha2MQTTs Around The World
 If you have your own Alpha2MQTT, be sure to send me a picture of it in action so I can add it to this page!
 
+
+
 AC from UK - Even got a box sorted for it!
 
-![Alpha2MQTT](Pics/AC.jpg)
+<img src="Pics/AC.jpg" width="500"/>
+
 
 
 GS from UK - Wall mounted using grips!
 
-![Alpha2MQTT](Pics/GS.jpg)
+<img src="Pics/GS.jpg" width="500"/>
+
 
 
 DS from UK - Used his Alpha2MQTT together with a self-build ePaper device to report stats in his house in real time!
 
-![Alpha2MQTT](Pics/DSUK1.jpg)
+<img src="Pics/DSUK1.jpg" width="500"/>
 
-![Alpha2MQTT](Pics/DSUK2.jpg)
+<img src="Pics/DSUK2.jpg" width="500"/>
+
 
 
 MK from AU - Very much a minimalist build, but demonstrates that just two cheap components can get a unit up and running!
 
-![Alpha2MQTT](Pics/MK.png)
+<img src="Pics/MK.png" width="500"/>
+
 
 
 DC from UK - Built using an ESP32!  Thanks for your input regardings stubborn Smile 5 debugging!
 
-![Alpha2MQTT](Pics/dc1.jpg)
-![Alpha2MQTT](Pics/dc2.jpg)
-![Alpha2MQTT](Pics/dc3.jpg)
+<img src="Pics/dc1.jpg" width="500"/>
+<img src="Pics/dc2.jpg" width="500"/>
+<img src="Pics/dc3.jpg" width="500"/>
+
 
 
 DM from UK!
 
-![Alpha2MQTT](Pics/dm.jpg)
+<img src="Pics/dm.jpg" width="500"/>
+
+
+
+PN from CR!
+
+<img src="Pics/pn1.jpg" width="500"/>
+<img src="Pics/pn2.jpg" width="500"/>
+<img src="Pics/pn3.jpg" width="500"/>

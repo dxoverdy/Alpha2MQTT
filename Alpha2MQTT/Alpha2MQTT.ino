@@ -1,6 +1,6 @@
 /*
 Name:		Alpha2MQTT.ino
-Created:	8/24/2022
+Created:	24/Aug/2022
 Author:		Daniel Young
 
 This file is part of Alpha2MQTT (A2M) which is released under GNU GENERAL PUBLIC LICENSE.
@@ -28,7 +28,7 @@ First, go and customise options at the top of Definitions.h!
 #include <Adafruit_SSD1306.h>
 
 // Device parameters
-char _version[6] = "v1.24";
+char _version[6] = "v1.25";
 
 // WiFi parameters
 WiFiClient _wifi;
@@ -400,7 +400,7 @@ void setup()
 {
 
 	// All for testing different baud rates to 'wake up' the inverter
-	unsigned long knownBaudRates[7] = { 115200, 57600, 38400, 19200, 14400, 9600, 4800 };
+	unsigned long knownBaudRates[7] = { 9600, 115200, 19200, 57600, 38400, 14400, 4800 };
 	bool gotResponse = false;
 	modbusRequestAndResponseStatusValues result = modbusRequestAndResponseStatusValues::preProcessing;
 	modbusRequestAndResponse response;

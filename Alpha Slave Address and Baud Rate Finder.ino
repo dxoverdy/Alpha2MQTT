@@ -1,6 +1,6 @@
 /*
 Name:		Alpha Slave Address Finder.ino
-Created:	1/22/2023
+Created:	22/Jan/2023
 Author:		Daniel Young
 
 This file is part of Alpha2MQTT (A2M) which is released under GNU GENERAL PUBLIC LICENSE.
@@ -384,6 +384,18 @@ modbusRequestAndResponseStatusValues sendModbus(uint8_t frame[], byte actualFram
 	digitalWrite(SERIAL_COMMUNICATION_CONTROL_PIN, RS485_RX);
 
 	return listenResponse(resp);
+}
+
+
+/*
+setBaudRate()
+
+Sets the baud rate for communication
+*/
+void setBaudRate(unsigned long baudRate)
+{
+	_RS485Serial->flush();
+	_RS485Serial->begin(baudRate);
 }
 
 
@@ -1000,15 +1012,24 @@ void iterateSlaveIds(char* topic)
 	char stateAddition[128] = ""; // 128 should cover individual additions to the payload
 	char line2Contents[OLED_CHARACTER_WIDTH];
 	char line3Contents[OLED_CHARACTER_WIDTH];
+	char line4Contents[OLED_CHARACTER_WIDTH];
+
+	unsigned long knownBaudRates[7] = { 9600, 115200, 19200, 57600, 38400, 14400, 4800 };
 
 	uint8_t alphaSlaveIdToTry = 0;
-	char testingHexSlaveAddress[5];
-	char successfulHexSlaveAddress[5];
+	char testingHexSlaveAddress[5] = "";
+	char successfulHexSlaveAddress[5] = "";
+	char testingBaudRate[10] = "";
+	char successfulBaudRate[10] = "";
+
 	bool found = false;
 	bool thisWorked = false;
+	int baudRateIterator = -1;
+	bool gotResponse = false;
 
 	// Empty the string
 	sprintf(successfulHexSlaveAddress, "");
+	sprintf(successfulBaudRate, "");
 
 	// For storing results
 	modbusRequestAndResponseStatusValues result;
@@ -1029,66 +1050,94 @@ void iterateSlaveIds(char* topic)
 
 	if (resultAddedToPayload == modbusRequestAndResponseStatusValues::addedToPayload)
 	{
-		alphaSlaveIdToTry = SLAVE_ID_START;
-		while (alphaSlaveIdToTry < SLAVE_ID_END)
+
+
+		while (!gotResponse)
 		{
-			alphaSlaveIdToTry++;
+			// Starts at -1, so increment to 0 for example
+			baudRateIterator++;
 
-			_alphaSlaveID = alphaSlaveIdToTry;
-
-			sprintf(testingHexSlaveAddress, "0x%02x", _alphaSlaveID);
-
-			// Read the SOC register using the 
-			// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
-			uint8_t	frame[] = { _alphaSlaveID, MODBUS_FN_READDATAREGISTER, REG_BATTERY_HOME_R_SOC >> 8, REG_BATTERY_HOME_R_SOC & 0xff, 0, REG_BATTERY_HOME_R_SOC_REGCOUNT, 0, 0 };
-
-			// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
-			result = sendModbus(frame, sizeof(frame), &response);
-
-			thisWorked = (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess);
-			if (thisWorked)
+			// Go back to zero if beyond the bounds
+			if (baudRateIterator > (sizeof(knownBaudRates) / sizeof(knownBaudRates[0])) - 1)
 			{
-				sprintf(successfulHexSlaveAddress, testingHexSlaveAddress);
+				baudRateIterator = 0;
 			}
-			found = found || thisWorked;
+
+			// Update the display
+			sprintf(testingBaudRate, "%u", knownBaudRates[baudRateIterator]);
+
+			// Set the rate
+			setBaudRate(knownBaudRates[baudRateIterator]);
 
 
-#ifdef OUTPUT_SERIAL
-			sprintf(_debugOutput, "Slave ID:\t%s\t%s", testingHexSlaveAddress, thisWorked ? "YES" : "NO");
-			Serial.println(_debugOutput);
-#endif
-
-#ifdef OUTPUT_DISPLAY
-			sprintf(line2Contents, "%s:%s", testingHexSlaveAddress, thisWorked ? "YES" : "NO");
-			sprintf(line3Contents, "%s:%s", successfulHexSlaveAddress, found ? "YES" : "NO");
-
-			updateOLED(false, line2Contents, found ? line3Contents : "", "");
-#endif
-
-#ifdef OUTPUT_WIFIANDMQTT
-			sprintf(stateAddition, "\"%s\":\"%s\",\r\n", testingHexSlaveAddress, thisWorked ? "Y" : "N");
-			// Let the onward process also know if the buffer failed.
-			resultAddedToPayload = addToPayload(stateAddition);
-			if (resultAddedToPayload == modbusRequestAndResponseStatusValues::payloadExceededCapacity)
+			alphaSlaveIdToTry = SLAVE_ID_START;
+			while (alphaSlaveIdToTry < SLAVE_ID_END)
 			{
-				// If the response to addStateInfo is payload exceeded get out, We will permit failing registers to carry on and try the next one.
-				break;
-			}
-#endif
+				alphaSlaveIdToTry++;
+
+				_alphaSlaveID = alphaSlaveIdToTry;
+
+				sprintf(testingHexSlaveAddress, "0x%02x", _alphaSlaveID);
+
+				// Read the SOC register using the 
+				// Generate a frame without CRC (ending 0, 0), sendModbus will do the rest
+				uint8_t	frame[] = { _alphaSlaveID, MODBUS_FN_READDATAREGISTER, REG_BATTERY_HOME_R_SOC >> 8, REG_BATTERY_HOME_R_SOC & 0xff, 0, REG_BATTERY_HOME_R_SOC_REGCOUNT, 0, 0 };
+
+				// And send to the device, it's all synchronos so by the time we get a response we will know if success or failure
+				result = sendModbus(frame, sizeof(frame), &response);
+
+				thisWorked = (result == modbusRequestAndResponseStatusValues::readDataRegisterSuccess);
+				if (thisWorked)
+				{
+					sprintf(successfulHexSlaveAddress, testingHexSlaveAddress);
+					sprintf(successfulBaudRate, testingBaudRate);
+				}
+				found = found || thisWorked;
 
 
-			if (alphaSlaveIdToTry == SLAVE_ID_END)
-			{
-				// Incrementing another would cause a wrap back to 0 from 255.
-				break;
+	#ifdef OUTPUT_SERIAL
+				sprintf(_debugOutput, "Baud Rate:\t%s\t%s", testingBaudRate, thisWorked ? "YES" : "NO");
+				Serial.println(_debugOutput);
+				sprintf(_debugOutput, "Slave ID:\t%s\t%s", testingHexSlaveAddress, thisWorked ? "YES" : "NO");
+				Serial.println(_debugOutput);
+	#endif
+
+	#ifdef OUTPUT_DISPLAY
+				sprintf(line2Contents, "%s", testingBaudRate);
+				sprintf(line3Contents, "%s:%s", testingHexSlaveAddress, thisWorked ? "YES" : "NO");
+				sprintf(line4Contents, "%s:%s", successfulHexSlaveAddress, found ? "YES" : "NO");
+
+				updateOLED(false, line2Contents, line3Contents, found ? line4Contents : "");
+	#endif
+
+	#ifdef OUTPUT_WIFIANDMQTT
+				sprintf(stateAddition, "\"%s\":\"%s\",\r\n\"baudRate\":\"%s\"\r\n", testingHexSlaveAddress, thisWorked ? "Y" : "N", testingBaudRate);
+				// Let the onward process also know if the buffer failed.
+				resultAddedToPayload = addToPayload(stateAddition);
+				if (resultAddedToPayload == modbusRequestAndResponseStatusValues::payloadExceededCapacity)
+				{
+					// If the response to addStateInfo is payload exceeded get out, We will permit failing registers to carry on and try the next one.
+					break;
+				}
+	#endif
+
+
+				if (alphaSlaveIdToTry == SLAVE_ID_END)
+				{
+					// Incrementing another would cause a wrap back to 0 from 255.
+					break;
+				}
 			}
+
 		}
+
+
 
 
 #ifdef OUTPUT_WIFIANDMQTT
 		if (resultAddedToPayload != modbusRequestAndResponseStatusValues::payloadExceededCapacity)
 		{
-			sprintf(stateAddition, "\"found\":\"%s\"\r\n\"successfulSlaveId\":\"%s\",\r\n", found ? "Y" : "N", successfulHexSlaveAddress);
+			sprintf(stateAddition, "\"found\":\"%s\"\r\n\"successfulSlaveId\":\"%s\",\r\n\"baudRate\":\"%s\"\r\n", found ? "Y" : "N", successfulHexSlaveAddress, successfulBaudRate);
 
 			// Let the onward process also know if the buffer failed.
 			resultAddedToPayload = addToPayload(stateAddition);
@@ -1116,13 +1165,13 @@ void iterateSlaveIds(char* topic)
 #endif
 
 #ifdef OUTPUT_DISPLAY
-		updateOLED(false, line2Contents, found ? line3Contents : "", "Done");
+		updateOLED(false, line2Contents, line3Contents, found ? line4Contents : "");
 #endif
 
 #ifdef OUTPUT_SERIAL
 		if (found)
 		{
-			sprintf(_debugOutput, "Found:\t%s", successfulHexSlaveAddress);
+			sprintf(_debugOutput, "Found:\t%s, Baud:\t%s", successfulHexSlaveAddress, successfulBaudRate);
 		}
 		else
 		{
