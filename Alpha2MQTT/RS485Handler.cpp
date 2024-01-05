@@ -103,6 +103,11 @@ modbusRequestAndResponseStatusValues RS485Handler::sendModbus(uint8_t frame[], b
 	//Calculate the CRC and overwrite the last two bytes.
 	calcCRC(frame, actualFrameSize);
 
+	// After some liaison with a user of Alpha2MQTT on a 115200 baud rate, this fixed inconsistent retrieval
+#ifdef REQUIRE_DELAY_DUE_TO_INCONSISTENT_RETRIEVAL
+	delay(REQUIRED_DELAY_DUE_TO_INCONSISTENT_RETRIEVAL);
+#endif
+
 	// Make sure there are no spurious characters in the in/out buffer.
 	flushRS485();
 

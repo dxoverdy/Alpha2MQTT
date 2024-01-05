@@ -1,0 +1,16 @@
+v1.26
+
+REQUIRE_DELAY_DUE_TO_INCONSISTENT_RETRIEVAL:
+
+After some liaison with a user of Alpha2MQTT on a 115200 baud rate who was suffering with sporadic NO-RESP,
+the following change helped fixed inconsistent retrieval.
+
+It introduces a slight delay between requests to the inverter to give it room to 'breathe'
+
+If you are in this scenario, and want to try playing with delays:
+At the top of Definitions.h, uncomment
+//#define REQUIRE_DELAY_DUE_TO_INCONSISTENT_RETRIEVAL
+
+80ms is a default starting point which is 1/12 of a second.  If it corrects the issue try reducing the delay to 60,
+40, etc until you find a happy place.
+#define REQUIRED_DELAY_DUE_TO_INCONSISTENT_RETRIEVAL 80

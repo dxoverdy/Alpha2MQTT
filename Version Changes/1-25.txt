@@ -5,7 +5,7 @@ Transition from Visual Studio to Visual Studio Code
 LEGACY_CALCULATIONS has been retired in favour of individual multipliers for affected registers.
 This is because my Smile B3 used different multipliers to the documentation.  Simply leverage
 GRID_VOLTAGE_MULTIPLIER, CELL_VOLTAGE_MULTIPLIER, INVERTER_TEMP_MULTIPLIER and TOTAL_ENERGY_MUTLIPLIER
-to multiply approprivate values if your figues seem off by factors of 10.
+at the top of Definitions.h to multiply approprivate values if your figues seem off by factors of 10.
 
 Alpha Slave Address and Baud Rate Finder.ino will now cycle all known baud rates and all slave addresses
 to help you find configuration details.

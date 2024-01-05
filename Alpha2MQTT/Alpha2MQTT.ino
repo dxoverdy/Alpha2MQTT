@@ -28,7 +28,7 @@ First, go and customise options at the top of Definitions.h!
 #include <Adafruit_SSD1306.h>
 
 // Device parameters
-char _version[6] = "v1.25";
+char _version[6] = "v1.26";
 
 // WiFi parameters
 WiFiClient _wifi;
