@@ -30,7 +30,7 @@ RS485Handler::RS485Handler()
 	_RS485Serial->begin(DEFAULT_BAUD_RATE, SWSERIAL_8N1);
 #elif defined MP_ESP32
 	_RS485Serial = new HardwareSerial(2); // Serial 2 PIN16=RXgreen, pin17=TXwhite
-	_RS485Serial->begin(DEFAULT_BAUD_RATE, SERIAL_8N1);
+	_RS485Serial->begin(DEFAULT_BAUD_RATE, SERIAL_8N1, 16, 17);
 #endif
 	
 }

@@ -28,7 +28,7 @@ First, go and customise options at the top of Definitions.h!
 #include <Adafruit_SSD1306.h>
 
 // Device parameters
-char _version[6] = "v1.26";
+char _version[6] = "v1.27";
 
 // WiFi parameters
 WiFiClient _wifi;
@@ -419,6 +419,8 @@ void setup()
 	// Configure LED for output
 	pinMode(LED_BUILTIN, OUTPUT);
 	
+	// Wire.setClock(10000);
+
 	// Display time
 	_display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize OLED with the I2C addr 0x3C (for the 64x48)
 	_display.clearDisplay();

@@ -3,5 +3,6 @@
     "board": "esp8266:esp8266:nodemcuv2",
     "sketch": "Alpha2MQTT\\Alpha2MQTT.ino",
     "output": "..\\Build",
-    "intelliSenseGen": "global"
+    "intelliSenseGen": "global",
+    "port": "COM5"
 }

@@ -1,0 +1,5 @@
+v1.27
+Added pin 16 and 17 to ESP32 Serial Initialisation.  The code for ESP32 has been updated (See link: espressif/arduino-esp32#9500)
+This causes the UART (hardware serial 2 to fail !)
+Many thanks to DannyBoy-PI
+
