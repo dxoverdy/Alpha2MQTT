@@ -29,9 +29,10 @@ It's designed to run on an ESP8266 or ESP32 microcontroller (it was developed on
 
 Alpha2MQTT honours 1.23 AlphaESS Modbus documentation:
 
-[AlphaESS Modbus Documentation](https://www.alpha-ess.de/images/downloads/handbuecher/AlphaESS-Handbuch_SMILE_ModBus_RTU_TCP_V2.pdf)
+[AlphaESS Modbus Documentation](https://alphaess.de/Public/Uploads/uploadfile/files/20230926/AlphaESS-Handbuch_SMILE_ModBus_RTU_TCP_V21.pdf)
 
-[AlphaESS Register List](https://www.alpha-ess.de/images/downloads/handbuecher/AlphaESS_Register_Parameter_List.pdf)
+[AlphaESS Register List](https://alphaess.de/Public/Uploads/uploadfile/files/20230926/AlphaESS_Register_Parameter_List.pdf)
+
 
 [Alternate AlphaESS Modbus Documentation Link](Pics/AlphaESS-Handbuch_SMILET30_ModBus_RTU_V123-DE.pdf)
 
