@@ -874,10 +874,10 @@ void updateRunstate()
 						switch (response.unsignedShortValue)
 						{
 						case DISPATCH_MODE_BATTERY_ONLY_CHARGED_VIA_PV:
-							strcpy(runningMode, "PVOnly");
+							strcpy(runningMode, "PV Only");
 							break;
 						case DISPATCH_MODE_STATE_OF_CHARGE_CONTROL:
-							strcpy(runningMode, "ChargeCtl");
+							strcpy(runningMode, "SOC Ctl");
 							break;
 						case DISPATCH_MODE_LOAD_FOLLOWING:
 							strcpy(runningMode, "LoadFollow");
@@ -901,7 +901,7 @@ void updateRunstate()
 							strcpy(runningMode, "FCAS");
 							break;
 						case DISPATCH_MODE_PV_POWER_SETTING:
-							strcpy(runningMode, "PVPwr");
+							strcpy(runningMode, "PV Pwr");
 							break;
 						default:
 							strcpy(runningMode, "BadMode");
