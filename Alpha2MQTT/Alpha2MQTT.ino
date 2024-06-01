@@ -979,7 +979,6 @@ void mqttReconnect()
 			
 		}
 
-		if (!subscribed)
 #ifdef DEBUG
 		sprintf(_debugOutput, "MQTT Failed: RC is %d\r\nTrying again in five seconds...", _mqtt.state());
 		Serial.println(_debugOutput);
