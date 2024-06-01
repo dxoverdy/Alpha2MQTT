@@ -828,6 +828,7 @@ void updateRunstate()
 {
 	
 	static unsigned long lastRun = 0;
+	static int lastLine2 = 0;
 	modbusRequestAndResponse response;
 	modbusRequestAndResponseStatusValues request;
 
@@ -847,42 +848,92 @@ void updateRunstate()
 
 		// Get Dispatch Start - Is Alpha2MQTT controlling the inverter?
 		request = _registerHandler->readHandledRegister(REG_DISPATCH_RW_DISPATCH_START, &response);
-		if (request == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+		if (request != modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
 		{
-			if (response.unsignedShortValue == DISPATCH_START_START)
+			strcpy(runningMode, "DS Err");
+		}
+		else
+		{
+			if (response.unsignedShortValue != DISPATCH_START_START)
 			{
-				// Yep, so get the mode.  And is it state of charge control or is the user using a different dispatch mode?
-				request = _registerHandler->readHandledRegister(REG_DISPATCH_RW_DISPATCH_MODE, &response);
-				if (request == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
-				{
-					if (response.unsignedShortValue == DISPATCH_MODE_STATE_OF_CHARGE_CONTROL)
-					{
-						// Yep, SOC, so determine if charging or charging by looking at power
-						request = _registerHandler->readHandledRegister(REG_DISPATCH_RW_ACTIVE_POWER_1, &response);
-						if (request == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
-						{
-							if (response.unsignedShortValue == DISPATCH_MODE_STATE_OF_CHARGE_CONTROL)
-							{
-								if (response.signedIntValue < 32000)
-								{
-									strcpy(runningMode, "Charge");
-								}
-								else if (response.signedIntValue > 32000)
-								{
-									strcpy(runningMode, "Discharge");
-								}
-								else
-								{
-									strcpy(runningMode, "Hold");
-								}
-							}
-						}
-					}
-				}
+				strcpy(runningMode, "Stopped");
 			}
 			else
 			{
-				strcpy(runningMode, "Normal");
+				if (lastLine2 == 0)
+				{
+					lastLine2 = 1;
+					// Get the mode.
+					request = _registerHandler->readHandledRegister(REG_DISPATCH_RW_DISPATCH_MODE, &response);
+					if (request != modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+					{
+						strcpy(runningMode, "Mode Err");
+					}
+					else
+					{
+						switch (response.unsignedShortValue)
+						{
+						case DISPATCH_MODE_BATTERY_ONLY_CHARGED_VIA_PV:
+							strcpy(runningMode, "PV Only");
+							break;
+						case DISPATCH_MODE_STATE_OF_CHARGE_CONTROL:
+							strcpy(runningMode, "SOC Ctl");
+							break;
+						case DISPATCH_MODE_LOAD_FOLLOWING:
+							strcpy(runningMode, "LoadFollow");
+							break;
+						case DISPATCH_MODE_MAXIMISE_OUTPUT:
+							strcpy(runningMode, "MaxOut");
+							break;
+						case DISPATCH_MODE_NORMAL_MODE:
+							strcpy(runningMode, "Normal");
+							break;
+						case DISPATCH_MODE_OPTIMISE_CONSUMPTION:
+							strcpy(runningMode, "OptConsmpt");
+							break;
+						case DISPATCH_MODE_MAXIMISE_CONSUMPTION:
+							strcpy(runningMode, "MaxConsmpt");
+							break;
+						case DISPATCH_MODE_ECO_MODE:
+							strcpy(runningMode, "ECO");
+							break;
+						case DISPATCH_MODE_FCAS_MODE:
+							strcpy(runningMode, "FCAS");
+							break;
+						case DISPATCH_MODE_PV_POWER_SETTING:
+							strcpy(runningMode, "PV Pwr");
+							break;
+						default:
+							strcpy(runningMode, "BadMode");
+							break;
+						}
+					}
+				}
+				else
+				{
+					lastLine2 = 0;
+					// Determine if charging or discharging by looking at power
+					request = _registerHandler->readHandledRegister(REG_DISPATCH_RW_ACTIVE_POWER_1, &response);
+					if (request != modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
+					{
+						strcpy(runningMode, "AP Err");
+					}
+					else
+					{
+						if (response.signedIntValue < 32000)
+						{
+							strcpy(runningMode, "Charge");
+						}
+						else if (response.signedIntValue > 32000)
+						{
+							strcpy(runningMode, "Discharge");
+						}
+						else
+						{
+							strcpy(runningMode, "Hold");
+						}
+					}
+				}
 			}
 		}
 
