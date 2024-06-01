@@ -604,6 +604,9 @@ void setupWifi()
 	// Set up in Station Mode - Will be connecting to an access point
 	WiFi.mode(WIFI_STA);
 
+	// Set the hostname for this Arduino
+	WiFi.hostname(DEVICE_NAME);
+
 	// And connect to the details defined at the top
 	WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
@@ -613,9 +616,6 @@ void setupWifi()
 		delay(250);
 		updateOLED(false, "Connecting", "WiFi...", _version);
 	}
-
-	// Set the hostname for this Arduino
-	WiFi.hostname(DEVICE_NAME);
 
 	// Output some debug information
 #ifdef DEBUG
