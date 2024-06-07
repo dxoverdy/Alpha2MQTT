@@ -932,19 +932,23 @@ void mqttReconnect()
 {
 	bool subscribed = false;
 	char subscriptionDef[100];
+	char line3[32];
+	int tries = 0;
 
 	// Loop until we're reconnected
 	while (true)
 	{
 
 		_mqtt.disconnect();		// Just in case.
+		tries++;
 		delay(200);
 
 #ifdef DEBUG
 		Serial.print("Attempting MQTT connection...");
 #endif
 
-		updateOLED(false, "Connecting", "MQTT...", _version);
+		snprintf(line3, sizeof(line3), "MQTT %d ...", tries);
+		updateOLED(false, "Connecting", line3, _version);
 		delay(100);
 
 		// Attempt to connect
