@@ -947,7 +947,7 @@ void mqttReconnect()
 		Serial.print("Attempting MQTT connection...");
 #endif
 
-		sprintf(line3, "MQTT %d ...", tries);
+		snprintf(line3, sizeof(line3), "MQTT %d ...", tries);
 		updateOLED(false, "Connecting", line3, _version);
 		delay(100);
 
