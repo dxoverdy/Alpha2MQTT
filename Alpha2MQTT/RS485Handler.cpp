@@ -352,18 +352,26 @@ modbusRequestAndResponseStatusValues RS485Handler::listenResponse(modbusRequestA
 	if (timedOut)
 	{
 #ifdef DEBUG
-		sprintf(_debugOutput, "Timed Out (inByteNumZeroIndexed): %d", inByteNumZeroIndexed);
-		Serial.println(_debugOutput);
-		sprintf(_debugOutput, "Timed Out (gotSlaveID): %d", gotSlaveID);
-		Serial.println(_debugOutput);
-		sprintf(_debugOutput, "Timed Out (gotFunctionCode): %d", gotFunctionCode);
-		Serial.println(_debugOutput);
-		sprintf(_debugOutput, "Timed Out (resp->functionCode): %d", resp->functionCode);
-		Serial.println(_debugOutput);
-		sprintf(_debugOutput, "Timed Out (gotData): %d", gotData);
-		Serial.println(_debugOutput);
-		sprintf(_debugOutput, "Timed Out (resp->dataSize): %d", resp->dataSize);
-		Serial.println(_debugOutput);
+		if (inByteNumZeroIndexed == 0)
+		{
+			// This is the common case of nothing received - there is no point in printing the rest
+			Serial.println("Timed out (no data received)");
+		}
+		else
+		{
+			sprintf(_debugOutput, "Timed Out (inByteNumZeroIndexed): %d", inByteNumZeroIndexed);
+			Serial.println(_debugOutput);
+			sprintf(_debugOutput, "Timed Out (gotSlaveID): %d", gotSlaveID);
+			Serial.println(_debugOutput);
+			sprintf(_debugOutput, "Timed Out (gotFunctionCode): %d", gotFunctionCode);
+			Serial.println(_debugOutput);
+			sprintf(_debugOutput, "Timed Out (resp->functionCode): %d", resp->functionCode);
+			Serial.println(_debugOutput);
+			sprintf(_debugOutput, "Timed Out (gotData): %d", gotData);
+			Serial.println(_debugOutput);
+			sprintf(_debugOutput, "Timed Out (resp->dataSize): %d", resp->dataSize);
+			Serial.println(_debugOutput);
+		}
 #endif
 	}
 

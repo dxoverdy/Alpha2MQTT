@@ -32,6 +32,32 @@ Customise these options as per README.txt.  Please read README.txt before contin
 #error You must only select one microprocessor from the list
 #endif
 
+// If the board definition for your ESP32 board doesn't define LED_BUILTIN, define it here
+// For example, some ESP32 modules work when configured as "ESP32 Dev Module" but that board file doesn't define LED_BUILTIN for that board
+#if defined(CONFIG_IDF_TARGET_ESP32) && !defined(LED_BUILTIN)
+# define LED_BUILTIN    2       // LED pin on ESP32 Devkit
+#endif
+
+// Define the width and height of the display in pixels.
+// The WeMos OLED shield used in the original project is 64x48 but most SSD1306 displays sold on Amazon are 128x64
+#if 0
+// Suggested settings for 128x64 display
+# define LED_WIDTH_PIXELS			128
+# define LED_HEIGHT_PIXELS		64
+# define LED_LINE_HEIGHT			(LED_HEIGHT_PIXELS/4)
+# define LED_LINE0_VPOS				12
+# define OLED_CHARACTER_WIDTH 16
+// Use a larger font to make use of the additional vertical pixels
+# define LED_FONT							FreeSansBold9pt7b
+#else
+// Default settings for WeMos 64x48 display
+# define LED_WIDTH_PIXELS			64
+# define LED_HEIGHT_PIXELS		48
+# define LED_LINE_HEIGHT			12
+# define LED_LINE0_VPOS				0
+# define OLED_CHARACTER_WIDTH 11
+// Leave LED_FONT undefined to use the default font
+#endif
 
 // If values for some registers such as voltage or temperatures appear to be out by a decimal place or two, try the following:
 // Documentation declares 1V - However Presume 0.1 as result appears to reflect this.  I.e. my voltage reading was 2421, * 0.1 for 242.1
@@ -948,7 +974,6 @@ enum modbusRequestAndResponseStatusValues
 #define MAX_FORMATTED_DATA_VALUE_LENGTH 129
 #define MAX_DATA_TYPE_DESC_LENGTH 20
 #define MAX_FORMATTED_DATE_LENGTH 21
-#define OLED_CHARACTER_WIDTH 11
 
 
 // This is the request and return object for the sendModbus() function.

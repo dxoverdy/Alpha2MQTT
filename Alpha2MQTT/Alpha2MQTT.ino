@@ -27,6 +27,17 @@ First, go and customise options at the top of Definitions.h!
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
+#ifdef LED_FONT
+// We have to #include the font file after we #include the Adafruit_GFX file otherwise it isn't found
+// So we can't #include it in Definitions.h. Use this rather clumsy mechanism instead.
+# define P_EXPAND(x) x
+# define P_CONCAT(x,y) P_EXPAND(x)y
+# define P_STR(x) #x
+# define P_XSTR(x) P_STR(x)
+# define P_INCLUDE_FILE P_XSTR(P_CONCAT(Fonts/,P_CONCAT(LED_FONT,.h)))
+# include P_INCLUDE_FILE
+#endif
+
 // Device parameters
 char _version[6] = "v1.27";
 
@@ -386,7 +397,7 @@ static struct mqttState _mqttAllHandledRegisters[] PROGMEM =
 // Wemos OLED Shield set up. 64x48
 // Pins D1 D2 if ESP8266
 // Pins GPIO22 and GPIO21 (SCL/SDA) with optional reset on GPIO13 if ESP32
-Adafruit_SSD1306 _display(-1); // No RESET Pin
+Adafruit_SSD1306 _display(LED_WIDTH_PIXELS, LED_HEIGHT_PIXELS);	// No RESET Pin
 
 
 
@@ -406,7 +417,6 @@ void setup()
 	modbusRequestAndResponse response;
 	char baudRateString[10] = "";
 	int baudRateIterator = -1;
-	bool firstCheck = true;
 
 
 
@@ -423,6 +433,9 @@ void setup()
 
 	// Display time
 	_display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize OLED with the I2C addr 0x3C (for the 64x48)
+#ifdef LED_FONT
+	_display.setFont(&LED_FONT);
+#endif
 	_display.clearDisplay();
 	_display.display();
 	updateOLED(false, "", "", _version);
@@ -500,11 +513,11 @@ void setup()
 		}
 
 		// Update the display
-		sprintf(baudRateString, "%u", knownBaudRates[baudRateIterator]);
+		sprintf(baudRateString, "%lu", knownBaudRates[baudRateIterator]);
 
 		updateOLED(false, "Test Baud", baudRateString, "");
 #ifdef DEBUG
-		sprintf(_debugOutput, "About To Try: %u", knownBaudRates[baudRateIterator]);
+		sprintf(_debugOutput, "About To Try: %lu", knownBaudRates[baudRateIterator]);
 		Serial.println(_debugOutput);
 #endif
 		// Set the rate
@@ -549,7 +562,9 @@ The loop function runs overand over again until power down or reset
 */
 void loop()
 {
+#ifdef FORCE_RESTART
 	static unsigned long autoReboot = 0;
+#endif
 
 	// Refresh LED Screen, will cause the status asterisk to flicker
 	updateOLED(true, "", "", "");
@@ -667,7 +682,9 @@ void updateOLED(bool justStatus, const char* line2, const char* line3, const cha
 	_display.clearDisplay();
 	_display.setTextSize(1);
 	_display.setTextColor(WHITE);
-	_display.setCursor(0, 0);
+
+	unsigned int vpos = LED_LINE0_VPOS;
+	_display.setCursor(0, vpos);
 
 	char line1Contents[OLED_CHARACTER_WIDTH];
 	char line2Contents[OLED_CHARACTER_WIDTH];
@@ -718,12 +735,10 @@ void updateOLED(bool justStatus, const char* line2, const char* line3, const cha
 	sprintf(line1Contents, "%s%c%c%c", "A2M    ", _oledOperatingIndicator, (WiFi.status() == WL_CONNECTED ? 'W' : ' '), (_mqtt.connected() && _mqtt.loop() ? 'M' : ' ') );
 	_display.println(line1Contents);
 
-
-
-
 	// Next line
 
-	_display.setCursor(0, 12);
+	vpos += LED_LINE_HEIGHT;
+	_display.setCursor(0, vpos);
 	if (!justStatus)
 	{
 		_display.println(line2Contents);
@@ -734,9 +749,8 @@ void updateOLED(bool justStatus, const char* line2, const char* line3, const cha
 		_display.println(_oledLine2);
 	}
 
-
-
-	_display.setCursor(0, 24);
+	vpos += LED_LINE_HEIGHT;
+	_display.setCursor(0, vpos);
 	if (!justStatus)
 	{
 		_display.println(line3Contents);
@@ -747,7 +761,8 @@ void updateOLED(bool justStatus, const char* line2, const char* line3, const cha
 		_display.println(_oledLine3);
 	}
 
-	_display.setCursor(0, 36);
+	vpos += LED_LINE_HEIGHT;
+	_display.setCursor(0, vpos);
 	if (!justStatus)
 	{
 		_display.println(line4Contents);
@@ -776,7 +791,6 @@ some system fault descriptions depend on knowing whether an AL based or AE based
 */
 modbusRequestAndResponseStatusValues getSerialNumber()
 {
-	static unsigned long lastRun = 0;
 	modbusRequestAndResponseStatusValues result = modbusRequestAndResponseStatusValues::preProcessing;
 	modbusRequestAndResponse response;
 
@@ -892,7 +906,7 @@ void updateRunstate()
 			request = _registerHandler->readHandledRegister(REG_BATTERY_HOME_R_BATTERY_POWER, &response);
 			if (request == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
 			{
-				sprintf(batteryPower, "Bat:%dW", response.signedShortValue);
+				sprintf(batteryPower, "Bat %5dW", response.signedShortValue);
 			}
 		}
 
@@ -902,7 +916,7 @@ void updateRunstate()
 			request = _registerHandler->readHandledRegister(REG_BATTERY_HOME_R_SOC, &response);
 			if (request == modbusRequestAndResponseStatusValues::readDataRegisterSuccess)
 			{
-				sprintf(batterySOC, "%0.02f%%", response.unsignedShortValue * 0.1);
+				sprintf(batterySOC, "%0.01f%%", response.unsignedShortValue * 0.1);
 			}
 		}
 
@@ -1001,7 +1015,6 @@ Query the handled register in the usual way, and add the cleansed output to the 
 */
 modbusRequestAndResponseStatusValues addStateInfo(uint16_t registerAddress, char* registerName, bool addComma, modbusRequestAndResponseStatusValues& resultAddedToPayload)
 {
-	unsigned int val;
 	char stateAddition[128] = ""; // 128 should cover individual additions to the payload
 	char addQuote = false;
 	modbusRequestAndResponse response;
@@ -1025,11 +1038,15 @@ modbusRequestAndResponseStatusValues addStateInfo(uint16_t registerAddress, char
 
 		// Let the onward process also know if the buffer failed.
 		resultAddedToPayload = addToPayload(stateAddition);
+#if 0	// Enable this debug to see when registers are read and added successfully
+		sprintf(_debugOutput, "addStateInfo succeeded for: 0x%04x, registerAddress);
+		Serial.println(_debugOutput);
+#endif
 	}
 	else
 	{
 #ifdef DEBUG
-		sprintf(_debugOutput, "Failed to addStateInfo for: %u, Result was: %d", registerAddress, result);
+		sprintf(_debugOutput, "Failed to addStateInfo for: 0x%04x, result was: %d", registerAddress, result);
 		Serial.println(_debugOutput);
 #endif
 	}
@@ -1039,7 +1056,7 @@ modbusRequestAndResponseStatusValues addStateInfo(uint16_t registerAddress, char
 
 
 
-modbusRequestAndResponseStatusValues addToPayload(char* addition)
+modbusRequestAndResponseStatusValues addToPayload(const char* addition)
 {
 	int targetRequestedSize = strlen(_mqttPayload) + strlen(addition);
 
@@ -1053,8 +1070,8 @@ modbusRequestAndResponseStatusValues addToPayload(char* addition)
 	}
 	else
 	{
-		// Add to the payload by sprintf back on itself with the addition
-		sprintf(_mqttPayload, "%s%s", _mqttPayload, addition);
+		// Add to the payload
+		strcat(_mqttPayload, addition);
 
 		return modbusRequestAndResponseStatusValues::addedToPayload;
 	}
@@ -1111,7 +1128,7 @@ void sendData()
 	}
 }
 
-void sendDataFromAppropriateArray(mqttState* registerArray, int numberOfRegisters, char* topic)
+void sendDataFromAppropriateArray(mqttState* registerArray, int numberOfRegisters, const char* topic)
 {
 	int	l = 0;
 
@@ -1164,7 +1181,7 @@ mqttCallback()
 
 // This function is executed when an MQTT message arrives on a topic that we are subscribed to.
 */
-void mqttCallback(char* topic, byte* message, unsigned int length)
+void mqttCallback(const char* topic, byte* message, unsigned int length)
 {
 	modbusRequestAndResponseStatusValues result = modbusRequestAndResponseStatusValues::preProcessing;
 	modbusRequestAndResponse response;
@@ -1245,7 +1262,7 @@ void mqttCallback(char* topic, byte* message, unsigned int length)
 	if (strcmp(topic, DEVICE_NAME MQTT_SUB_REQUEST_READ_HANDLED_REGISTER) == 0)
 	{
 		subScription = mqttSubscriptions::readHandledRegister;
-		strcpy(topicResponse, DEVICE_NAME MQTT_MES_RESPONSE_READ_HANDLED_REGISTER) == 0;
+		strcpy(topicResponse, DEVICE_NAME MQTT_MES_RESPONSE_READ_HANDLED_REGISTER);
 	}
 	else if (strcmp(topic, DEVICE_NAME MQTT_SUB_REQUEST_READ_RAW_REGISTER) == 0)
 	{
@@ -1284,7 +1301,7 @@ void mqttCallback(char* topic, byte* message, unsigned int length)
 	}
 	else
 	{
-		mqttSubscriptions::unknown;
+		subScription = mqttSubscriptions::unknown;
 		result = modbusRequestAndResponseStatusValues::notValidIncomingTopic;
 	}
 
@@ -1908,7 +1925,7 @@ sendMqtt
 
 Sends whatever is in the modular level payload to the specified topic.
 */
-void sendMqtt(char *topic)
+void sendMqtt(const char *topic)
 {
 	// Attempt a send
 	if (!_mqtt.publish(topic, _mqttPayload))
