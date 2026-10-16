@@ -357,6 +357,9 @@ Double and triple check the value you send.  Writing an invalid or incompatible 
 
 I have written to most of the R/W registers where I have had an interest in doing so, and it appears AlphaESS have developed this to be pretty robust where it just disregards junk requests, however please, employ discretion at all times!
 
+### Settings writes on a SMILE-B3
+A Storion SMILE-B3 (EMS 1.03.78) answers a Write Raw Data Register to any of the settings `0x084F` to `0x0859` with `writeDataRegisterSuccess` and then keeps the old value unless the matching bit of the time period control flag `0x084F` is set at the moment of the write: bit 1 (value 2, discharge time control) unlocks `0x0850` to `0x0854`, bit 0 (value 1, charge time control) unlocks `0x0855` to `0x0859`. The flag itself always takes a write, and a value written while the bit was set stays after the bit is cleared. So read `0x084F`, write it back with the needed bit set, write the setting, write `0x084F` back to what it was, then read the setting back. The dispatch registers `0x0880` to `0x0887` need none of this. Checked on the registers above by reading back at 1 s and 5 s; whether the inverter honours a changed discharge cutoff in operation was not yet observed when this was written.
+
 
 ## Slave Errors
 If the request and response was successful, but the inverter failed to carry out the task for some reason, it will return a slave error.  The response to any request above will be of the following format if so:
